@@ -22,7 +22,7 @@
  */
 class Export_it_upd { 
 
-    public $version = '1.0.4'; 
+    public $version = '1.0.5'; 
     
     public $name = 'Export_it';
     

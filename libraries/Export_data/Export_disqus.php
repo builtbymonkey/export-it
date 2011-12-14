@@ -24,7 +24,6 @@ class Export_disqus
 {
 	public function __construct()
 	{
-		header('Content-type: text/xml');
 		$this->EE =& get_instance();
 	}
 	
