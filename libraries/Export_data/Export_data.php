@@ -322,64 +322,62 @@ class Export_data
 		$this->EE->load->library('xml_writer');
 	    $this->EE->xml_writer->setRootName($root_name);
 	    $this->EE->xml_writer->initiate();
-	    
-	    //ok; i'll own this. I got lazy here. 
-	    //TODO: make this not suck
+
 	    foreach($data AS $i => $item)
 	    {
 	    	$this->EE->xml_writer->startBranch($branch_name);
 	    	foreach($item AS $key => $value)
 	    	{
-	    		if(!is_array($value))
-	    		{
-	    			$this->EE->xml_writer->addNode($key, $value, array(), TRUE);
-	    		}
-	    		else
-	    		{
-	    			$this->EE->xml_writer->startBranch($key);
-	    			foreach($value AS $_key => $sub)
-	    			{
-	    				if(!is_array($sub))
-	    				{
-	    					$this->EE->xml_writer->addNode($_key, $sub, array(), TRUE);
-	    				}
-	    				else 
-	    				{
-	    					
-	    					if(!is_numeric($_key))
-	    					{
-	    						$this->EE->xml_writer->startBranch($_key);
-	    					}
-		    				foreach($sub AS $k => $v)
-		    				{
-		    					if(is_numeric($k))
-		    					{
-		    						
-		    						foreach($v AS $j => $jj)
-		    						{
-		    							$this->EE->xml_writer->addNode($j, $jj, array(), TRUE);
-		    						}
-		    						
-		    					}
-		    					else
-		    					{
-		    						$this->EE->xml_writer->addNode($k, $v, array(), TRUE);
-		    					}
-		    				}
-		    				
-		    				if(!is_numeric($_key))
-		    				{
-		    					$this->EE->xml_writer->endBranch();
-		    				}
-	    				}
-	    			}
-	    			$this->EE->xml_writer->endBranch();
-	    		}
+	    		$this->_add_xml_nodes($key, $value);
 	    	}
+	    	
 	    	$this->EE->xml_writer->endBranch();
 	    }
 
 	    $this->EE->xml_writer->getXml(true);		
+	}
+	
+	private function _add_xml_nodes($key, $value)
+	{
+		if(!is_array($value) && !is_numeric($key))
+		{
+			$wrap = TRUE;
+			if(is_numeric($value))
+			{
+				$wrap = FALSE;
+			}
+			$this->EE->xml_writer->addNode($key, $value, array(), $wrap);
+			return;			
+			
+		}
+
+		if(is_array($value) && !is_numeric($key))
+		{
+			$this->EE->xml_writer->startBranch($key);
+		}
+		foreach($value AS $_key => $sub)
+		{
+			if(!is_array($sub))
+			{
+				$wrap = TRUE;
+				if(is_numeric($value))
+				{
+					$wrap = FALSE;
+				}				
+				$this->EE->xml_writer->addNode($_key, $sub, array(), $wrap);
+			}
+			else 
+			{					
+				$this->_add_xml_nodes($_key, $sub);
+				
+			}				
+		}
+		
+		if(is_array($value) && !is_numeric($key))
+    	{
+    		$this->EE->xml_writer->endBranch();
+		}
+	    			
 	}
 	
 	public function download_ee_xml($data, $file_name = FALSE)

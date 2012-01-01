@@ -27,7 +27,7 @@ class Export_it_ext
 	
 	public $name = 'Export It';
 	
-	public $version = '1.0.5';
+	public $version = '1.0.6';
 	
 	public $description	= 'Extension for modifying how exporting works';
 	

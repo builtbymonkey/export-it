@@ -22,7 +22,7 @@
  */
 class Export_it_upd { 
 
-    public $version = '1.0.5'; 
+    public $version = '1.0.6'; 
     
     public $name = 'Export_it';
     
@@ -125,8 +125,7 @@ class Export_it_upd {
 										),
 						'setting_value'  => array(
 											'type' 			=> 'text',
-											'null'			=> FALSE,
-											'default'		=> ''
+											'null'			=> FALSE
 										),
 						'serialized' => array(
 											'type' => 'int',

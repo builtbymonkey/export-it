@@ -66,7 +66,8 @@ class Export_it_settings_model extends CI_Model
 	public function add_setting($setting)
 	{
 		$data = array(
-		   'setting_key' => $setting
+		   'setting_key' => $setting,
+		   'setting_value' => ''
 		);
 		
 		return $this->db->insert($this->_table, $data); 

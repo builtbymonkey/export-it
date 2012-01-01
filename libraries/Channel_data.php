@@ -47,6 +47,7 @@ class Channel_data
 		$this->EE->api->instantiate('channel_entries');
 		$this->EE->api->instantiate('channel_fields');
 		$this->EE->load->helper('custom_field');
+		$this->EE->load->library('member_data');
 	}
 	
 	public function get_entries(array $where)
@@ -112,6 +113,12 @@ class Channel_data
 		
 		foreach($data AS $key => $entry)
 		{
+			$data[$key]['channel_name'] = $channel_data->channel_name;
+			if(isset($entry['author_id']))
+			{
+				$data[$key]['author_data'] = $this->EE->member_data->get_member($entry['author_id']);
+			}			
+			
 			foreach($channel_fields AS $field)
 			{
 				if(array_key_exists('field_id_'.$field['field_id'], $entry))
@@ -142,6 +149,7 @@ class Channel_data
 		switch($field['field_type'])
 		{
 			case 'image':
+			case 'file':
 				$data[$field['field_name']] = $this->clean_image_data($entry['field_id_'.$field['field_id']]);	
 			break;
 			
@@ -223,12 +231,14 @@ class Channel_data
 		if(count($arr) >= '1')
 		{
 			$return = array();
+			$i = 0;
 			foreach($arr AS $tag)
 			{
 				if($tag != '')
 				{
-					$return[]['tag'] = $tag;
+					$return[$i]['tag'] = $tag;
 				}
+				$i++;
 			}
 			return $return;
 		}
@@ -258,7 +268,7 @@ class Channel_data
 	
 	public function clean_channel_files_data($entry_id, $field_id)
 	{
-		$this->EE->db->select("file_id");
+		$this->EE->db->select("*");
 		$this->EE->db->from('channel_files cf');
 		$this->EE->db->where('cf.entry_id', $entry_id);	
 		$this->EE->db->where('cf.field_id', $field_id);	
@@ -268,9 +278,18 @@ class Channel_data
 		if(count($arr) >= '1')
 		{
 			$return = array();
+			$i = 0;
 			foreach($arr AS $file)
 			{
-				$return[]['channel_file'] = $file['file_id'];
+				foreach($file AS $key => $value)
+				{
+					$return[$i]['channel_file'][$key] = $value;
+					if($key == 'member_id')
+					{
+						$return[$i]['channel_file']['member_info'] = $this->EE->member_data->get_member($value);
+					}
+				}
+				$i++;
 			}
 			return $return;
 		}
@@ -282,12 +301,14 @@ class Channel_data
 		if(count($arr) >= '1')
 		{
 			$return = array();
+			$i = 0;
 			foreach($arr AS $member)
 			{
 				if($member != '')
 				{
-					$return[]['member'] = $member;
+					$return[$i]['member'][$i] = $this->EE->member_data->get_member($member);
 				}
+				$i++;
 			}
 			return $return;
 		}		
@@ -361,37 +382,45 @@ class Channel_data
 			return FALSE;
 		}
 
-		$data = $data->row();
+		$data = $data->result_array();
 		$cols = $cols->result_array();
+
 		$return = array();
-		foreach($cols AS $key => $col)
+		$count = 0;
+		foreach($data AS $row)
 		{
-			$obj = 'col_id_'.$col['col_id'];
-			$item = $data->$obj;
-			if(isset($item) && $item != '')
-			{
-				$return[$col['col_name']] = $item;
-				switch($col['col_type'])
+
+			foreach($cols AS $key => $col)
+			{	
+				$obj = 'col_id_'.$col['col_id'];
+				$item = $row[$obj];
+				if(isset($item) && $item != '')
 				{
-					case 'image':
-						$return[$col['col_name']] = $this->clean_image_data($item);	
-					case 'assets':
-						$return[$col['col_name']] = $this->clean_assets_data($item);
-					break;
-					case 'playa':
-						$return[$col['col_name']] = $this->clean_playa_data($item);	
-					break;
-					case 'vmg_chosen_member':
-						$return[$col['col_name']] = $this->clean_vmg_chosen_member_data($item);	
-					break;
-					case 'tagger':
-						$return[$col['col_name']] = $this->clean_tagger_data($item);	
-					break;	
-					case 'securitee':
-						$return[$col['col_name']] = $this->clean_securitee_data($item);	
-					break;
-				}				
-			}			
+					$return[$count]['matrix'][$count][$col['col_name']] = $item;
+					switch($col['col_type'])
+					{
+						case 'image':
+						case 'file':
+							$return[$count]['matrix'][$count][$col['col_name']] = $this->clean_image_data($item);	
+						case 'assets':
+							$return[$count]['matrix'][$count][$col['col_name']] = $this->clean_assets_data($item);
+						break;
+						case 'playa':
+							$return[$count]['matrix'][$count][$col['col_name']] = $this->clean_playa_data($item);	
+						break;
+						case 'vmg_chosen_member':
+							$return[$count]['matrix'][$count][$col['col_name']] = $this->clean_vmg_chosen_member_data($item);	
+						break;
+						case 'tagger':
+							$return[$count]['matrix'][$count][$col['col_name']] = $this->clean_tagger_data($item);	
+						break;	
+						case 'securitee':
+							$return[$count]['matrix'][$count][$col['col_name']] = $this->clean_securitee_data($item);	
+						break;
+					}				
+				}			
+			}
+			$count++;
 		}
 		return $return;		
 	}
@@ -514,12 +543,43 @@ class Channel_data
 		}
 	}
 	
-	public function make_url_title($title)
+	public function make_url_title($title, $channel_id = FALSE)
 	{
 		$word_separator = $this->EE->config->item('word_separator');
 		
 		$this->EE->load->helper('url');
-		return url_title($title, $word_separator, TRUE);		
+		$url_title = url_title($title, $word_separator, TRUE);	
+
+		if(!$channel_id)
+		{
+			return $url_title; //probably a category and i don't give a fuck about that right now
+		}
+		
+		$this->EE->db->where(array('url_title' => $url_title, 'channel_id' => $channel_id));
+		$count = $this->EE->db->count_all_results('channel_titles');
+		if($count > 0)
+		{
+			$url_title = substr($url_title, 0, 70);
+			$this->EE->db->where(array('url_title' => $url_title, 'channel_id' => $channel_id));
+			$count = $this->EE->db->count_all_results('channel_titles');
+			if($count > 0)
+			{
+				$this->EE->db->select("url_title, MID(url_title, ".(strlen($url_title) + 1).") + 1 AS next_suffix", FALSE);
+				$this->EE->db->where("url_title REGEXP('".preg_quote($this->EE->db->escape_str($url_title))."[0-9]*$')");
+				$this->EE->db->where(array('channel_id' => $channel_id));
+				$this->EE->db->order_by('next_suffix', 'DESC');
+				$this->EE->db->limit(1);
+				$query = $this->EE->db->get('channel_titles');				
+				if ($query->num_rows() == 0 OR ($query->row('next_suffix') > 99999))
+				{
+					return FALSE;
+				}
+			
+				$url_title = $url_title.$query->row('next_suffix');				
+			}
+		}
+		
+		return $url_title;
 	}
 	
 	public function add_update_entry($channel_id, $data, $translate = FALSE)
