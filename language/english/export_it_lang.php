@@ -36,6 +36,6 @@ $lang = array(
 'api_disabled' => 'Api Disabled!',
 'bad_method' => 'Bad Method',
 'api_url' => 'API URL',
-'api_url_instructions' => 'This is the URL used to access the API. Be sure to read the documentation prior to working with the API.',
+'api_url_instructions' => 'This is the URL used to access the API. Be sure to read the <a href="http://mithra62.com/docs/view/export-it-rest-server-api">documentation</a> prior to working with the API.',
 ''=>''
 );
