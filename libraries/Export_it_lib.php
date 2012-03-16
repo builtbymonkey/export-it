@@ -96,7 +96,7 @@ class Export_it_lib
 			break;	
 
 			case 'channel_entries':
-				return array('xml' => 'XML', 'json' => 'JSON');
+				return array('xls' => 'Excel', 'xml' => 'XML', 'json' => 'JSON');
 			break;
 		}
 	}
@@ -194,8 +194,48 @@ class Export_it_lib
 		$this->url_base = $url_base;
 	}
 	
-	public function export_data($type, $type)
+	public function perpage_select_options()
 	{
-		
+		return array(
+			   '10' => '10 '.lang('results'),
+			   '25' => '25 '.lang('results'),
+			   '75' => '75 '.lang('results'),
+			   '100' => '100 '.lang('results'),
+			   '150' => '150 '.lang('results')
+		);		
 	}
+	
+	public function date_select_options()
+	{
+		return array(
+			   '' => lang('date_range'),
+			   '1' => lang('past_day'),
+			   '7' => lang('past_week'),
+			   '31' => lang('past_month'),
+			   '182' => lang('past_six_months'),
+			   '365' => lang('past_year'),
+			   'custom_date' => lang('any_date')
+		);				
+	}	
+	
+	public function create_pagination($method, $total, $per_page)
+	{
+		$config = array();
+		$config['page_query_string'] = TRUE;
+		$config['base_url'] = $this->url_base.$method;
+		$config['total_rows'] = $total;
+		$config['per_page'] = $per_page;
+		$config['page_query_string'] = TRUE;
+		$config['full_tag_open'] = '<p id="paginationLinks">';
+		$config['full_tag_close'] = '</p>';
+		$config['prev_link'] = '<img src="'.$this->EE->cp->cp_theme_url.'images/pagination_prev_button.gif" width="13" height="13" alt="&lt;" />';
+		$config['next_link'] = '<img src="'.$this->EE->cp->cp_theme_url.'images/pagination_next_button.gif" width="13" height="13" alt="&gt;" />';
+		$config['first_link'] = '<img src="'.$this->EE->cp->cp_theme_url.'images/pagination_first_button.gif" width="13" height="13" alt="&lt; &lt;" />';
+		$config['last_link'] = '<img src="'.$this->EE->cp->cp_theme_url.'images/pagination_last_button.gif" width="13" height="13" alt="&gt; &gt;" />';
+
+		$this->EE->pagination->initialize($config);
+		return $this->EE->pagination->create_links();		
+	}
+	
+	
 }

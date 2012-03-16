@@ -30,6 +30,7 @@ class Export_data
 		$this->EE->load->library('Export_data/export_disqus');
 		$this->EE->load->library('Export_data/export_json');
 		$this->EE->load->library('Export_data/export_ee_xml');
+		$this->EE->load->library('Export_data/export_xls');
 		$this->EE->load->helper('utilities');
 	}
 	
@@ -53,6 +54,10 @@ class Export_data
 			case 'json':
 				$this->download_json($data, 'channel_entry_export.json');
 			break;
+			
+			case 'xls':
+				$this->download_array($data, TRUE, 'channel_entry_export.xls');
+			break;			
 		}		
 	}
 	
@@ -78,6 +83,10 @@ class Export_data
 			
 			case 'json':
 				$this->download_json($data, 'channel_entry_export.json');
+			break;
+			
+			case 'xls':
+				$this->download_array($data, TRUE, 'channel_entry_export.xls');
 			break;
 		}		
 	}	
@@ -149,14 +158,14 @@ class Export_data
 		}
 	}	
 	
-	public function export_members($export_format = 'xls', $group_id = '0', $include_custom_fields = FALSE, $complete_select = FALSE)
+	public function export_members($data, $format = 'xls')
 	{
-		$data = $this->EE->member_data->get_members($group_id, $include_custom_fields, $complete_select);
 		if($this->disable_download)
 		{
 			$data = $this->sanitize_member($data);
-		}		
-		switch($export_format)
+		}
+				
+		switch($format)
 		{
 			case 'xls':
 			default:
@@ -389,7 +398,7 @@ class Export_data
 		}
 		
 		echo $this->EE->export_ee_xml->generate($data);
-	}	
+	}
 	
 	/**
 	 * Forces an array to download as a csv file
@@ -405,21 +414,8 @@ class Export_data
 			header("Content-Disposition: attachment; filename=\"$file_name\"");
 		}
 		
-		$cols = '';
-		$rows = '';			
-		if(is_array($arr) && count($arr) >= 1)
-		{
-			$rows = array();
-			$cols = array_keys($arr['0']);
-			foreach($arr AS $key => $value)
-			{
-				$rows[] = implode("\t", $value);
-			}
-			
-			echo implode("\t", $cols)."\n";
-			echo implode("\n", $rows);
-		}
-	}
+		echo $this->EE->export_xls->create($arr, TRUE);
+	}	
 	
 	public function download_disqus(array $arr)
 	{

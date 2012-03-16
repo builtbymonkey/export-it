@@ -7,7 +7,7 @@
  * @author		Eric Lamb
  * @copyright	Copyright (c) 2011, mithra62, Eric Lamb.
  * @link		http://mithra62.com/projects/view/export-it/
- * @version		1.8.2
+ * @version		1.0.6
  * @filesource 	./system/expressionengine/third_party/export_it/
  */
 
@@ -17,6 +17,6 @@
  * @var array
  */
 $help_menu = array( 
-			'index' => 'http://mithra62.com/docs/view/backup-pro-instructions', 
-			'settings' => 'http://mithra62.com/docs/view/backup-pro-configuration'
+			'index' => 'http://mithra62.com/docs/view/export-it-control-panel-export', 
+			'settings' => 'http://mithra62.com/docs/view/export-it-control-panel-export'
 ); 

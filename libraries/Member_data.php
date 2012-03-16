@@ -47,27 +47,47 @@ class Member_data
 		}
 	}
 	
-	public function get_members($group_id = '', $include_custom_fields = FALSE, $complete = FALSE)
+	public function get_members($where = FALSE, $include_custom_fields = FALSE, $complete = FALSE, $limit = FALSE, $page = '0', $order = 'member_id ASC')
 	{
 		if($complete)
 		{
-			$this->EE->db->select("members.*");
+			$this->EE->db->select("members.*, member_groups.group_title");
 		}
 		else
 		{
-			$this->EE->db->select("members.username, members.member_id, members.screen_name, members.email, members.join_date, members.last_visit, members.group_id, members.member_id, members.in_authorlist");
+			$this->EE->db->select("members.username, members.member_id, members.screen_name, members.email, members.join_date, members.last_visit, members.group_id, members.member_id, members.in_authorlist, member_groups.group_title");
 		}
 		
 		$this->EE->db->from('members');
-		if($group_id && $group_id != '')
+
+		if(is_array($where) && count($where) >= '1')
 		{
-			$this->EE->db->where('group_id', $group_id);
+			foreach($where AS $key => $value)
+			{
+				$this->EE->db->where($key, $value);
+			}
 		}
+		elseif($where)
+		{
+			$this->EE->db->where($where);
+		}
+		
+		$this->EE->db->join('member_groups', 'member_groups.group_id = members.group_id');
+		$this->EE->db->join('member_data', 'member_data.member_id = members.member_id');
 		
 		if($include_custom_fields)
 		{
 			$this->EE->db->select('member_data.*');
-			$this->EE->db->join('member_data', 'member_data.member_id = members.member_id');
+		}
+		
+		if($limit)
+		{
+			$this->EE->db->limit($limit, $page);
+		}
+		
+		if($order)
+		{
+			$this->EE->db->order_by($order);
 		}
 		
 		$data = $this->EE->db->get();
@@ -79,6 +99,45 @@ class Member_data
 		}
 		return $users;
 	}
+	
+	public function get_total_members($where = FALSE)
+	{
+		if(is_array($where) && count($where) >= '1')
+		{
+			foreach($where AS $key => $value)
+			{
+				$this->EE->db->where($key, $value);
+			}
+		}
+		elseif($where)
+		{
+			$this->EE->db->where($where);
+		}
+		
+		$this->EE->db->join('member_data', 'member_data.member_id = members.member_id');
+		$data = $this->EE->db->count_all_results('members');
+		return $data;	
+	}
+	
+	public function get_first_date($where = FALSE)
+	{
+		if(is_array($where) && count($where) >= '1')
+		{
+			foreach($where AS $key => $value)
+			{
+				$this->EE->db->where($key, $value);
+			}
+		}
+		elseif($where)
+		{
+			$this->EE->db->where($where);
+		}	
+		
+		$this->EE->db->select_min('join_date');	
+		$this->EE->db->join('member_data', 'member_data.member_id = members.member_id');
+		$data = $this->EE->db->get('members');
+		return $data->row('join_date');
+	}	
 	
 	public function get_member($member_id = '', $include_custom_fields = FALSE, $complete = FALSE)
 	{

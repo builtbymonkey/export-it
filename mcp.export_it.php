@@ -24,6 +24,8 @@ class Export_it_mcp
 {
 	public $url_base = '';
 	
+	public $perpage = '20';
+	
 	/**
 	 * The name of the module; used for links and whatnots
 	 * @var string
@@ -44,6 +46,7 @@ class Export_it_mcp
 		$this->EE->load->library('member_data');
 		$this->EE->load->library('channel_data');  
 		$this->EE->load->library('encrypt');
+		$this->EE->load->library('json_ordering');
 		$this->EE->load->library('Export_data/export_data');
 		
 		$this->EE->load->add_package_path(PATH_MOD.'mailinglist/'); 
@@ -75,24 +78,74 @@ class Export_it_mcp
 		exit;
 	}
 	
-	public function members()
+	public function export()
 	{
-		if(isset($_POST['export_members']))
+		$type = $this->EE->input->get_post('type');
+		$export_format = $this->EE->input->get_post('format');
+		switch($type)
 		{
-			$export_format = $this->EE->input->get_post('export_format');
-			$group_id = $this->EE->input->get_post('group_id');
-			$include_custom_fields = $this->EE->input->get_post('include_custom_fields');
-			$complete_select = $this->EE->input->get_post('complete_select');
-			$this->EE->export_data->export_members($export_format, $group_id, $include_custom_fields, $complete_select);
-			exit;
-		}
+			case 'members':
+			default:
+				$export_format = $this->EE->input->get_post('format');
+				$group_id = $this->EE->input->get_post('group_id');
+				$include_custom_fields = $this->EE->input->get_post('include_custom_fields');
+				$complete_select = $this->EE->input->get_post('complete_select');
 				
-		$vars = array();
+				$group_id = ($this->EE->input->get_post('group_id') && $this->EE->input->get_post('group_id') != '') ? $this->EE->input->get_post('group_id') : FALSE;
+				$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
+				$keyword = ($this->EE->input->get_post('member_keywords') && $this->EE->input->get_post('member_keywords') != '') ? $this->EE->input->get_post('member_keywords') : FALSE;
+
+				$where = $this->EE->json_ordering->build_member_filter_where($keyword, $date_range, $group_id);
+				$data = $this->EE->member_data->get_members($where, $include_custom_fields, $complete_select, FALSE, 0, FALSE);
+				
+				$this->EE->export_data->export_members($data, $export_format);				
+			break;
+		}
+
+		exit;
+	}
+	
+	public function members()
+	{	
+		$total = $this->EE->member_data->get_total_members();
+		$vars['members'] = $this->EE->member_data->get_members(FALSE, FALSE, TRUE, $this->settings['members_list_limit'], '0', 'members.member_id ASC');		
+
+		$this->EE->cp->add_js_script(array('plugin' => 'dataTables','ui' => 'datepicker'));
+		$dt = $this->EE->export_it_js->get_members_datatables('export_members_ajax_filter', 6, 1, $this->settings['members_list_limit']);
+		$this->EE->javascript->output($dt);
+		$this->EE->javascript->compile();
+		$this->EE->load->library('pagination');
+
+
+		$vars['pagination'] = $this->EE->export_it_lib->create_pagination('export_members_ajax_filter', $total, $this->settings['members_list_limit']);
+				
+		$vars['total_members'] = $total;
+		$vars['date_selected'] = '';
+		$vars['member_keywords'] = '';
+		
+		$first_date = $this->EE->member_data->get_first_date();
+		if($first_date)
+		{
+			$vars['default_start_date'] = m62_convert_timestamp($first_date, '%Y-%m-%d');
+		}
+		else
+		{
+			$vars['default_start_date'] = m62_convert_timestamp(mktime(), '%Y-%m-%d');
+		}		
+
+		$vars['perpage_select_options'] = $this->EE->export_it_lib->perpage_select_options();
+		$vars['date_select_options'] = $this->EE->export_it_lib->date_select_options();		
+				
 		$vars['member_groups_dropdown'] = $this->EE->member_data->get_member_groups();
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('members');
 		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('members'));
 		return $this->EE->load->view('members', $vars, TRUE);		
 	}
+	
+	function export_members_ajax_filter()
+	{
+		die($this->EE->json_ordering->member_ordering($this->perpage, $this->url_base));
+	}		
 	
 	public function channel_entries()
 	{
