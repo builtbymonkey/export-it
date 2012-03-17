@@ -91,32 +91,10 @@ class Export_data
 		}		
 	}	
 	
-	public function export_comments($export_format = 'xls', $date_range = '', $status = '', $channel_id = '', $entry_id = '')
+	public function export_comments($data, $format)
 	{
-		$where = array();
-		if($channel_id != '' && $channel_id != 'all')
-		{
-			$where['channel_id'] = $channel_id;
-		}
-		
-		if($entry_id != '')
-		{
-			$where['entry_id'] = $entry_id;
-		}
-		
-		if($status != '')
-		{
-			$where['status'] = $status;
-		}
-		
-		if($date_range != '')
-		{
-			$where['comment_date'] = (mktime()-($date_range*24*60*60));
-		}
-		
-		$data = $this->EE->channel_data->get_comments($where);
-		switch($export_format)
-		{
+		switch($format)
+		{			
 			case 'disqus':
 			default:
 				$this->download_disqus($data, TRUE, 'comment_export.rss');
@@ -128,7 +106,11 @@ class Export_data
 			
 			case 'json':
 				$this->download_json($data, 'comment_export.json');
-			break;			
+			break;
+				
+			case 'xls':
+				$this->download_array($data, TRUE, 'comment_export.xls');
+			break;					
 		}
 	}
 	

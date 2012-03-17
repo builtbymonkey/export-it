@@ -38,6 +38,100 @@
 	}
 	
 	/**
+	 * Creates the JSON for the Comment export CP method
+	 * @param int $perpage
+	 * @param string $url_base
+	 */
+	public function comments_ordering($perpage, $url_base)
+	{
+		$col_map = array('comment', 'entry.title', 'name', 'comment_date', 'comment.status');
+		$id = ($this->EE->input->get_post('id')) ? $this->EE->input->get_post('id') : '';
+		$keywords = ($this->EE->input->get_post('k_search')) ? $this->EE->input->get_post('k_search') : FALSE;
+		$channel_id = ($this->EE->input->get_post('channel_id') && $this->EE->input->get_post('channel_id') != '') ? $this->EE->input->get_post('channel_id') : FALSE;
+		$status = ($this->EE->input->get_post('status') && $this->EE->input->get_post('status') != '') ? $this->EE->input->get_post('status') : FALSE;
+		$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
+		
+		$perpage = ($this->EE->input->get_post('perpage')) ? $this->EE->input->get_post('perpage') : $this->settings['comments_list_limit'];
+		$offset = ($this->EE->input->get_post('iDisplayStart')) ? $this->EE->input->get_post('iDisplayStart') : 0; // Display start point
+		$sEcho = $this->EE->input->get_post('sEcho');
+	
+		$order = array();
+	
+		if ($this->EE->input->get('iSortCol_0') !== FALSE)
+		{
+			for ( $i=0; $i < $this->EE->input->get('iSortingCols'); $i++ )
+			{
+				if (isset($col_map[$this->EE->input->get('iSortCol_'.$i)]))
+				{
+					$order[$col_map[$this->EE->input->get('iSortCol_'.$i)]] = ($this->EE->input->get('sSortDir_'.$i) == 'asc') ? 'asc' : 'desc';
+				}
+			}
+		}
+	
+		$tdata = array();
+		$i = 0;
+	
+		if (count($order) == 0)
+		{
+			$order = $this->dbprefix."members.member_id DESC";
+		}
+		else
+		{
+			$sort = '';
+			foreach($order AS $key => $value)
+			{
+				$sort = $key.' '.$value;
+			}
+			$order = $sort;
+		}
+	
+		$where = array();
+		if($channel_id)
+		{
+			$where['comments.channel_id'] = $channel_id;
+		}
+	
+		if($keywords)
+		{
+			$where['search'] = $keywords;
+		}
+		
+		if($status)
+		{
+			$where['comments.status'] = $status;
+		}
+		
+		if($date_range)
+		{
+			$where['date_range'] = $date_range;
+		}
+
+		$total = $this->EE->comment_data->get_total_comments();
+		$j_response['sEcho'] = $sEcho;
+		$j_response['iTotalRecords'] = $total;
+		$j_response['iTotalDisplayRecords'] = $this->EE->comment_data->get_total_comments($where);
+	
+		$data = $this->EE->comment_data->get_comments($where, $perpage, $offset, $order);
+		
+		$status_select = $this->EE->export_it_lib->get_status_select();
+		foreach ($data as $item)
+		{
+			$status = (isset($status_select[$item['status']]) ? $status_select[$item['status']] : $item['status']);
+			$m[] = '<a href="?D=cp&C=addons_modules&M=show_module_cp&module=comment&method=edit_comment_form&comment_id='.$item['comment_id'].'">'.word_limiter($item['comment'], 10).'</a>';
+			$m[] = $item['title'];
+			$m[] = $item['name'];
+			$m[] = m62_convert_timestamp($item['comment_date']);
+			$m[] = $status;
+			$tdata[$i] = $m;
+			$i++;
+			unset($m);
+		}
+	
+		$j_response['aaData'] = $tdata;
+		return $this->EE->javascript->generate_json($j_response, TRUE);
+	}
+	
+	/**
 	 * Creates the JSON for the Mailing List export CP method
 	 * @param int $perpage
 	 * @param string $url_base

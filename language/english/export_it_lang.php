@@ -44,7 +44,15 @@ $lang = array(
 'any_date' => 'Any Date',
 'keywords' => 'Keywords',
 		
-		'emails' => 'Emails',
-		'mailinglists' => 'Mailing Lists',
+'emails' => 'Emails',
+'mailinglists' => 'Mailing Lists',
+'comments' => 'Comments',
+'comment' => 'Comment',
+'select_channel' => 'Select Channel',	
+'entry_title' => 'Title',	
+		
+'no_matching_comments' => 'No Comments Found',
+'start_date' => 'Start Date',
+'end_date' => 'End Date',
 ''=>''
 );

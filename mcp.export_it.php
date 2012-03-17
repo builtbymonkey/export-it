@@ -46,6 +46,7 @@ class Export_it_mcp
 		$this->EE->load->library('member_data');
 		$this->EE->load->library('channel_data');
 		$this->EE->load->library('mailinglist_data');
+		$this->EE->load->library('comment_data');
 		$this->EE->load->library('encrypt');
 		$this->EE->load->library('json_ordering');
 		$this->EE->load->library('Export_data/export_data');
@@ -103,6 +104,37 @@ class Export_it_mcp
 
 				$data = $this->EE->mailinglist_data->get_list_emails($where);
 				$this->EE->export_data->export_mailing_list($data, $format);				
+			break;
+			
+			case 'comments':
+				$format = $this->EE->input->get_post('format');
+				$date_range = $this->EE->input->get_post('date_range');
+				$status = $this->EE->input->get_post('status');
+				$channel_id = $this->EE->input->get_post('channel_id');
+				$keywords = $this->EE->input->get_post('keywords');
+				$where = array();
+				if($channel_id)
+				{
+					$where['comments.channel_id'] = $channel_id;
+				}
+			
+				if($keywords)
+				{
+					$where['search'] = $keywords;
+				}
+				
+				if($status)
+				{
+					$where['comments.status'] = $status;
+				}
+				
+				if($date_range)
+				{
+					$where['date_range'] = $date_range;
+				}				
+				
+				$data = $this->EE->comment_data->get_comments($where);
+				$this->EE->export_data->export_comments($data, $format);				
 			break;
 			
 			case 'members':
@@ -194,17 +226,38 @@ class Export_it_mcp
 	
 	public function comments()
 	{
-		if(isset($_POST['export_comments']))
-		{
-			$export_format = $this->EE->input->get_post('export_format');
-			$date_range = $this->EE->input->get_post('date_range');
-			$status = $this->EE->input->get_post('status');
-			$channel_id = $this->EE->input->get_post('channel_id');
-			$this->EE->export_data->export_comments($export_format, $date_range, $status, $channel_id);
-			exit;			
-		}
 		
-		$vars = array();
+		$total = $this->EE->comment_data->get_total_comments();
+		$vars['comments'] = $this->EE->comment_data->get_comments(FALSE, $this->settings['comments_list_limit']);
+		
+		$this->EE->cp->add_js_script(array('plugin' => 'dataTables','ui' => 'datepicker'));
+		$dt = $this->EE->export_it_js->get_comments_datatables('export_comments_ajax_filter', 3, 1, $this->settings['comments_list_limit']);
+		$this->EE->javascript->output($dt);
+		$this->EE->javascript->compile();
+		$this->EE->load->library('pagination');
+		
+		$vars['pagination'] = $this->EE->export_it_lib->create_pagination('export_comments_ajax_filter', $total, $this->settings['comments_list_limit']);
+		$vars['total_comments'] = $total;
+		
+		$vars['date_selected'] = '';
+		$vars['keywords'] = '';
+		$vars['perpage_select_options'] = $this->EE->export_it_lib->perpage_select_options();
+		$vars['export_format'] = $this->EE->export_it_lib->export_formats('mailing_list');
+		$vars['mailing_lists'] = $this->EE->export_it_lib->get_mailing_lists();
+		
+		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('mailing_list'));		
+		
+		$first_date = $this->EE->comment_data->get_first_date();
+		if($first_date)
+		{
+			$vars['default_start_date'] = m62_convert_timestamp($first_date, '%Y-%m-%d');
+		}
+		else
+		{
+			$vars['default_start_date'] = m62_convert_timestamp(mktime(), '%Y-%m-%d');
+		}
+
+		$vars['date_select_options'] = $this->EE->export_it_lib->date_select_options();
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('comments');
 		$vars['comment_channels'] = $this->EE->export_it_lib->get_comment_channels();
 		$vars['date_select'] = $this->EE->export_it_lib->get_date_select();

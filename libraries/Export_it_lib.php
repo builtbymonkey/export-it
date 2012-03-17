@@ -92,7 +92,7 @@ class Export_it_lib
 			break;
 			
 			case 'comments':
-				return array('disqus' => 'Disqus', 'xml' => 'XML', 'json' => 'JSON');
+				return array('xls' => 'Excel', 'disqus' => 'Disqus', 'xml' => 'XML', 'json' => 'JSON');
 			break;	
 
 			case 'channel_entries':
@@ -142,12 +142,14 @@ class Export_it_lib
 			return array();
 		}
 
+		$options = array();
+		$options['0'] = lang('select_channel');
 		foreach ($query->result() as $row)
 		{
-			$opts[$row->channel_id] = $row->channel_title;
+			$options[$row->channel_id] = $row->channel_title;
 		}
 
-		return $opts;		
+		return $options;		
 	}
 	
 	 public function get_date_select()
