@@ -1,6 +1,32 @@
-<?php
-class Json_ordering
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+ /**
+ * mithra62 - Export It
+ *
+ * @package		mithra62:Export_it
+ * @author		Eric Lamb
+ * @copyright	Copyright (c) 2012, mithra62, Eric Lamb.
+ * @link		http://mithra62.com/projects/view/export-it/
+ * @since		1.1
+ * @filesource 	./system/expressionengine/third_party/export_it/
+ */
+ 
+ /**
+ * Export It - Json Ordering Class
+ *
+ * Wrappers for each of the export methods in the CP. 
+ * Basically, generates all the JSON used within datatables
+ *
+ * @package 	mithra62:Export_it
+ * @author		Eric Lamb
+ * @filesource 	./system/expressionengine/third_party/export_it/libraries/Json_ordering.php
+ */
+ class Json_ordering
 {
+	/**
+	 * Handy helper var for the database prefix
+	 * @var string
+	 */
 	public $dbprefix = FALSE;
 	
 	public function __construct()
@@ -11,6 +37,88 @@ class Json_ordering
 		$this->dbprefix = $this->EE->db->dbprefix;
 	}
 	
+	/**
+	 * Creates the JSON for the Mailing List export CP method
+	 * @param int $perpage
+	 * @param string $url_base
+	 */
+	public function mailing_list_ordering($perpage, $url_base)
+	{
+		$col_map = array('email', 'ip', 'list_name');
+		$id = ($this->EE->input->get_post('id')) ? $this->EE->input->get_post('id') : '';
+		$keywords = ($this->EE->input->get_post('k_search')) ? $this->EE->input->get_post('k_search') : FALSE;
+		$list_id = ($this->EE->input->get_post('list_id') && $this->EE->input->get_post('list_id') != '') ? $this->EE->input->get_post('list_id') : FALSE;
+			
+		$perpage = ($this->EE->input->get_post('perpage')) ? $this->EE->input->get_post('perpage') : $this->settings['mailing_list_limit'];
+		$offset = ($this->EE->input->get_post('iDisplayStart')) ? $this->EE->input->get_post('iDisplayStart') : 0; // Display start point
+		$sEcho = $this->EE->input->get_post('sEcho');
+	
+		$order = array();
+	
+		if ($this->EE->input->get('iSortCol_0') !== FALSE)
+		{
+			for ( $i=0; $i < $this->EE->input->get('iSortingCols'); $i++ )
+			{
+				if (isset($col_map[$this->EE->input->get('iSortCol_'.$i)]))
+				{
+					$order[$col_map[$this->EE->input->get('iSortCol_'.$i)]] = ($this->EE->input->get('sSortDir_'.$i) == 'asc') ? 'asc' : 'desc';
+				}
+			}
+		}
+	
+		$tdata = array();
+		$i = 0;
+	
+		if (count($order) == 0)
+		{
+			$order = $this->dbprefix."members.member_id DESC";
+		}
+		else
+		{
+			$sort = '';
+			foreach($order AS $key => $value)
+			{
+				$sort = $key.' '.$value;
+			}
+			$order = $sort;
+		}
+	
+		$where = array();
+		if($list_id)
+		{
+			$where['mailing_list.list_id'] = $list_id;
+		}
+		
+		if($keywords)
+		{
+			$where['search'] = $keywords;
+		}
+		
+		$total = $this->EE->mailinglist_data->get_total_emails();
+		$j_response['sEcho'] = $sEcho;
+		$j_response['iTotalRecords'] = $total;
+		$j_response['iTotalDisplayRecords'] = $this->EE->mailinglist_data->get_total_emails($where);
+	
+		$data = $this->EE->mailinglist_data->get_list_emails($where, $perpage, $offset, $order);
+		foreach ($data as $item)
+		{
+			$m[] = '<a href="mailto:'.$item['email'].'">'.$item['email'].'</a>';
+			$m[] = $item['ip_address'];
+			$m[] = $item['list_names'];
+			$tdata[$i] = $m;
+			$i++;
+			unset($m);
+		}
+	
+		$j_response['aaData'] = $tdata;
+		return $this->EE->javascript->generate_json($j_response, TRUE);
+	}
+	
+	/**
+	 * Creates the JSON for the Member export CP method
+	 * @param int $perpage
+	 * @param string $url_base
+	 */
 	public function member_ordering($perpage, $url_base)
 	{
 		$col_map = array('member_id', 'username', 'screen_name', 'email', 'join_date', 'group_title');

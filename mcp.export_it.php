@@ -44,7 +44,8 @@ class Export_it_mcp
 		$this->EE->load->library('export_it_lib');
 		$this->EE->load->library('export_it_js');
 		$this->EE->load->library('member_data');
-		$this->EE->load->library('channel_data');  
+		$this->EE->load->library('channel_data');
+		$this->EE->load->library('mailinglist_data');
 		$this->EE->load->library('encrypt');
 		$this->EE->load->library('json_ordering');
 		$this->EE->load->library('Export_data/export_data');
@@ -84,6 +85,26 @@ class Export_it_mcp
 		$export_format = $this->EE->input->get_post('format');
 		switch($type)
 		{
+			case 'mailinglist':
+				$format = $this->EE->input->get_post('export_format');
+				$exclude_duplicates = $this->EE->input->get_post('exclude_duplicates');
+				$keywords = ($this->EE->input->get_post('keywords')) ? $this->EE->input->get_post('keywords') : FALSE;
+				$list_id = ($this->EE->input->get_post('list_id') && $this->EE->input->get_post('list_id') != '') ? $this->EE->input->get_post('list_id') : FALSE;
+				$where = array();
+				if($list_id)
+				{
+					$where['mailing_list.list_id'] = $list_id;
+				}
+				
+				if($keywords)
+				{
+					$where['search'] = $keywords;
+				}
+
+				$data = $this->EE->mailinglist_data->get_list_emails($where);
+				$this->EE->export_data->export_mailing_list($data, $format);				
+			break;
+			
 			case 'members':
 			default:
 				$export_format = $this->EE->input->get_post('format');
@@ -142,7 +163,7 @@ class Export_it_mcp
 		return $this->EE->load->view('members', $vars, TRUE);		
 	}
 	
-	function export_members_ajax_filter()
+	public function export_members_ajax_filter()
 	{
 		die($this->EE->json_ordering->member_ordering($this->perpage, $this->url_base));
 	}		
@@ -166,6 +187,11 @@ class Export_it_mcp
 		return $this->EE->load->view('channel_entries', $vars, TRUE);			
 	}
 	
+	public function export_channel_entries_ajax_filter()
+	{
+		die($this->EE->json_ordering->channel_entries_ordering($this->perpage, $this->url_base));
+	}	
+	
 	public function comments()
 	{
 		if(isset($_POST['export_comments']))
@@ -187,23 +213,39 @@ class Export_it_mcp
 		return $this->EE->load->view('comments', $vars, TRUE);		
 	}
 	
-	public function mailing_list()
+	public function export_comments_ajax_filter()
 	{
-		if(isset($_POST['export_mailing_list']))
-		{
-			$export_format = $this->EE->input->get_post('export_format');
-			$exclude_duplicates = $this->EE->input->get_post('exclude_duplicates');
-			$mailing_list = $this->EE->input->get_post('list_id');
-			
-			$this->EE->export_data->export_mailing_list($export_format, $exclude_duplicates, $mailing_list);
-			exit;
-		}
-		$vars = array();
+		die($this->EE->json_ordering->comments_ordering($this->perpage, $this->url_base));
+	}	
+	
+	public function mailing_list()
+	{		
+		
+		$total = $this->EE->mailinglist_data->get_total_emails();
+		$vars['emails'] = $this->EE->mailinglist_data->get_list_emails(FALSE, $this->settings['mailing_list_limit']);
+		
+		$this->EE->cp->add_js_script(array('plugin' => 'dataTables'));
+		$dt = $this->EE->export_it_js->get_mailing_list_datatables('export_mailing_list_ajax_filter', 3, 1, $this->settings['mailing_list_limit']);
+		$this->EE->javascript->output($dt);
+		$this->EE->javascript->compile();
+		$this->EE->load->library('pagination');
+		
+		$vars['pagination'] = $this->EE->export_it_lib->create_pagination('export_mailing_list_ajax_filter', $total, $this->settings['mailing_list_limit']);
+		$vars['total_emails'] = $total;
+		$vars['date_selected'] = '';
+		$vars['keywords'] = '';
+		$vars['perpage_select_options'] = $this->EE->export_it_lib->perpage_select_options();
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('mailing_list');
 		$vars['mailing_lists'] = $this->EE->export_it_lib->get_mailing_lists();
+		
 		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('mailing_list'));
 		return $this->EE->load->view('mailing_list', $vars, TRUE);		
 	}
+	
+	public function export_mailing_list_ajax_filter()
+	{
+		die($this->EE->json_ordering->mailing_list_ordering($this->perpage, $this->url_base));
+	}	
 
 	public function settings()
 	{

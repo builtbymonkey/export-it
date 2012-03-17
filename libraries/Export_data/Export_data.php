@@ -214,26 +214,9 @@ class Export_data
 		}		
 	}	
 	
-	public function export_mailing_list($export_format = 'xls', $exclude_duplicates = TRUE, $mailing_list = FALSE)
+	public function export_mailing_list($data, $format = 'xls')
 	{	
-		$data = $this->EE->mailinglist_model->get_emails_by_list($mailing_list)->result_array();
-		if($exclude_duplicates)
-		{
-			$arr = array();
-			$used = array();
-			foreach($data AS $email)
-			{
-				if(!in_array($email['email'], $used))
-				{
-					$used[] = $email['email'];
-					$arr[] = $email;
-				}
-				
-			}
-			$data = $arr;
-		}
-		
-		switch($export_format)
+		switch($format)
 		{
 			case 'xls':
 			default:

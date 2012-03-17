@@ -37,6 +37,9 @@ class Export_it_settings_model extends CI_Model
 						'enable_api' => '0',
 						'api_key' => '',
 						'members_list_limit' => '20',
+						'mailing_list_limit' => '20',
+						'comments_list_limit' => '20',
+						'channel_entries_list_limit' => '20',
 						'api_key' => '',
 						'export_it_date_format' => '%M %d, %Y, %H:%i:%s%A',
 						'api_key' => ''

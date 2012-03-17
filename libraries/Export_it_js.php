@@ -289,5 +289,198 @@ class Export_it_js
 		';
 		
 		return $js;
+	}
+
+	public function get_mailing_list_datatables($ajax_method, $cols, $piplength, $perpage, $extra = FALSE, $last_sort = FALSE)
+	{
+	
+		$js = '
+			var oCache = {
+			iCacheLower: -1
+		};
+		
+		function fnSetKey( aoData, sKey, mValue )
+		{
+			for ( var i=0, iLen=aoData.length ; i<iLen ; i++ )
+			{
+				if ( aoData[i].name == sKey )
+				{
+					aoData[i].value = mValue;
+				}
+			}
+		}
+		
+		function fnGetKey( aoData, sKey )
+		{
+			for ( var i=0, iLen=aoData.length ; i<iLen ; i++ )
+			{
+				if ( aoData[i].name == sKey )
+				{
+					return aoData[i].value;
+				}
+			}
+			return null;
+		}
+		
+		function fnDataTablesPipeline ( sSource, aoData, fnCallback ) {
+			var iPipe = '.$piplength.',
+			bNeedServer = false,
+			sEcho = fnGetKey(aoData, "sEcho"),
+			iRequestStart = fnGetKey(aoData, "iDisplayStart"),
+			iRequestLength = fnGetKey(aoData, "iDisplayLength"),
+			iRequestEnd = iRequestStart + iRequestLength,
+			k_search    = document.getElementById("keywords"),
+			list_id       = document.getElementById("list_id"),
+			f_perpage       = document.getElementById("f_perpage");
+			total_range	= document.getElementById("total_range");
+			
+			function k_search_value() {
+				if ($(k_search).data("order_data") == "n") {
+					return "";
+				}
+			
+				return k_search.value;
+			}
+			aoData.push(
+			{ "name": "k_search", "value": k_search_value() },
+			{ "name": "list_id", "value": list_id.value },
+			{ "name": "f_perpage", "value": f_perpage.value }
+			);
+				
+			oCache.iDisplayStart = iRequestStart;
+				
+			/* outside pipeline? */
+			if ( oCache.iCacheLower < 0 || iRequestStart < oCache.iCacheLower || iRequestEnd > oCache.iCacheUpper )
+			{
+				bNeedServer = true;
+			}
+				
+			/* sorting etc changed? */
+			if ( oCache.lastRequest && !bNeedServer )
+			{
+				for( var i=0, iLen=aoData.length ; i<iLen ; i++ )
+				{
+					if ( aoData[i].name != "iDisplayStart" && aoData[i].name != "iDisplayLength" && aoData[i].name != "sEcho" )
+					{
+						if ( aoData[i].value != oCache.lastRequest[i].value )
+						{
+							bNeedServer = true;
+							break;
+						}
+					}
+				}
+			}
+				
+			/* Store the request for checking next time around */
+			oCache.lastRequest = aoData.slice();
+				
+			if ( bNeedServer )
+			{
+				if ( iRequestStart < oCache.iCacheLower )
+				{
+					iRequestStart = iRequestStart - (iRequestLength*(iPipe-1));
+					if ( iRequestStart < 0 )
+					{
+						iRequestStart = 0;
+					}
+				}
+				
+				oCache.iCacheLower = iRequestStart;
+				oCache.iCacheUpper = iRequestStart + (iRequestLength * iPipe);
+				oCache.iDisplayLength = fnGetKey( aoData, "iDisplayLength" );
+				fnSetKey( aoData, "iDisplayStart", iRequestStart );
+				fnSetKey( aoData, "iDisplayLength", iRequestLength*iPipe );
+				
+				aoData.push(
+				{ "name": "k_search", "value": k_search_value() },
+				{ "name": "list_id", "value": list_id.value },
+				{ "name": "f_perpage", "value": f_perpage.value }
+				);
+				
+				$.getJSON( sSource, aoData, function (json) {
+					/* Callback processing */
+					oCache.lastJson = jQuery.extend(true, {}, json);
+					if ( oCache.iCacheLower != oCache.iDisplayStart )
+					{
+						json.aaData.splice( 0, oCache.iDisplayStart-oCache.iCacheLower );
+					}
+					json.aaData.splice( oCache.iDisplayLength, json.aaData.length );
+					fnCallback(json)
+				} );
+			}
+			else
+			{
+				json = jQuery.extend(true, {}, oCache.lastJson);
+				json.sEcho = sEcho; /* Update the echo for each response */
+				json.aaData.splice( 0, iRequestStart-oCache.iCacheLower );
+				json.aaData.splice( iRequestLength, json.aaData.length );
+				fnCallback(json);
+				return;
+			}
+		}
+		var time = new Date().getTime();
+		
+		oTable = $(".mainTable").dataTable( {
+			"sPaginationType": "full_numbers",
+			"bLengthChange": false,
+			"bFilter": false,
+			"sWrapper": false,
+			"sInfo": false,
+			"bAutoWidth": false,
+			"iDisplayLength": '.$perpage.',
+			'.$extra.'
+			
+			"aoColumns": [null, null, null ],
+			
+			
+			"oLanguage": {
+			"sZeroRecords": "'.lang('no_matching_orders').'",
+			
+			"oPaginate": {
+			"sFirst": "<img src=\"'.$this->EE->cp->cp_theme_url.'images/pagination_first_button.gif\" width=\"13\" height=\"13\" alt=\"&lt; &lt;\" />",
+			"sPrevious": "<img src=\"'.$this->EE->cp->cp_theme_url.'images/pagination_prev_button.gif\" width=\"13\" height=\"13\" alt=\"&lt; &lt;\" />",
+			"sNext": "<img src=\"'.$this->EE->cp->cp_theme_url.'images/pagination_next_button.gif\" width=\"13\" height=\"13\" alt=\"&lt; &lt;\" />",
+			"sLast": "<img src=\"'.$this->EE->cp->cp_theme_url.'images/pagination_last_button.gif\" width=\"13\" height=\"13\" alt=\"&lt; &lt;\" />"
+			}
+			},
+				
+			"bProcessing": true,
+			"bServerSide": true,
+			"sAjaxSource": EE.BASE+"&C=addons_modules&M=show_module_cp&module=export_it&method='.$ajax_method.'&time=" + time,
+			"fnServerData": fnDataTablesPipeline
+		} );
+		
+		$("#keywords").bind("keydown blur paste", function (e) {
+			/* Filter on the column (the index) of this element */
+			setTimeout(function(){oTable.fnDraw();}, 1);
+		});
+		
+		$("#export_submit").click(function() {
+			var date_range = $("#date_range").val();
+			var list_id = $("#list_id").val();
+			var keywords = $("#keywords").val();
+			var format = $("#export_format").val();
+			var dataString = "format=" +format+ "&list_id=" + list_id + "&keywords=" + keywords;
+				
+			window.location.replace(EE.BASE+"&C=addons_modules&M=show_module_cp&module=export_it&method=export&type=mailinglist&"+dataString);
+			return false;
+		});
+		
+		$("#order_form").submit(function() {
+			oTable.fnDraw();
+			return false;
+		});
+
+		$("#f_perpage").change(function () {
+			oTable.fnDraw();
+		});
+			
+		$("select#list_id").change(function () {
+			oTable.fnDraw();
+		});
+	
+	';
+	
+		return $js;
 	}	
 }

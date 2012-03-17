@@ -43,5 +43,8 @@ $lang = array(
 'join_date' => 'Join Date',
 'any_date' => 'Any Date',
 'keywords' => 'Keywords',
+		
+		'emails' => 'Emails',
+		'mailinglists' => 'Mailing Lists',
 ''=>''
 );
