@@ -66,7 +66,7 @@ class Mailinglist_data
 	 */
 	public function get_list_emails($where = FALSE, $limit = FALSE, $page = '0', $order = 'email ASC')
 	{
-		$this->EE->db->select('mailing_list.*, group_concat(list_title) AS list_names');
+		$this->EE->db->select('mailing_list.*, group_concat(list_title) AS list_names ');
 		$this->EE->db->from('mailing_list');
 		$this->EE->db->join('mailing_lists', 'mailing_lists.list_id = mailing_list.list_id');
 	
@@ -114,4 +114,26 @@ class Mailinglist_data
 			$this->EE->db->where($where);
 		}
 	}
+	
+	/**
+	 * Returns an asociative array of the mailing lists.
+	 */
+	public function get_mailing_lists()
+	{
+		$lists = $this->EE->mailinglist_model->get_mailinglists();
+		if($lists->num_rows == '0')
+		{
+			return array();
+		}
+		else
+		{
+			$arr = array(null => 'All');
+			$lists = $lists->result_array();
+			foreach($lists AS $list)
+			{
+				$arr[$list['list_id']] = $list['list_title'];
+			}
+		}
+		return $arr;
+	}	
 }

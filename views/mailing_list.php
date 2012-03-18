@@ -36,7 +36,7 @@ if(count($emails) > 0)
     <?=form_close()?>	
 <?php 
 
-	echo form_open($query_base.'delete_order_confirm'); 
+	echo form_open($query_base.'mailinglist_stuff'); 
 	
 	$this->table->set_template($cp_pad_table_template);
 	$this->table->set_heading(
@@ -46,14 +46,13 @@ if(count($emails) > 0)
 	);
 
 	foreach($emails as $email)
-	{
-		
-		$customer_link = 'customer_view&email=';
+	{	
+
 		$this->table->add_row(
 								'<a href="mailto:'.$email['email'].'">'.$email['email'].'</a>',
 								$email['ip_address'],
-								$email['list_names']
-								);
+								m62_create_mailinglist_links($email['list_names'], $mailing_lists)
+		);
 	}
 	
 	echo $this->table->generate();

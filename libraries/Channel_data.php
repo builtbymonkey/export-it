@@ -242,7 +242,7 @@ class Channel_data
 		{
 			foreach($where AS $key => $value)
 			{
-				$this->EE->db->where($key, $value, FALSE);
+				$this->EE->db->where($key, $value);
 			}
 		}
 		elseif(is_string($where))

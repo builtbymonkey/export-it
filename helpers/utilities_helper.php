@@ -57,3 +57,22 @@ if( !function_exists('m62_status_color'))
 		}
 	}	
 }
+
+if( !function_exists('m62_create_mailinglist_links'))
+{
+	function m62_create_mailinglist_links($str, $mailinglists)
+	{
+		$mailinglists = array_flip($mailinglists);
+		$lists = explode(',',$str);	
+		$links = array();
+		foreach($lists AS $list)
+		{
+			if(isset($mailinglists[$list]))
+			{
+				$links[] = '<a href="javascript:;" rel="'.$mailinglists[$list].'" class="mailinglist_filter_id">'.$list.'</a>';		
+			}
+		}
+		
+		return implode(', ', $links);
+	}	
+}

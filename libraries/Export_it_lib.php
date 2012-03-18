@@ -101,25 +101,6 @@ class Export_it_lib
 		}
 	}
 	
-	public function get_mailing_lists()
-	{
-		$lists = $this->EE->mailinglist_model->get_mailinglists();
-		if($lists->num_rows == '0')
-		{
-			return array();
-		}
-		else
-		{
-			$arr = array(null => 'All');
-			$lists = $lists->result_array();
-			foreach($lists AS $list)
-			{
-				$arr[$list['list_id']] = $list['list_title'];
-			}
-		}
-		return $arr;
-	}
-	
 	public function get_comment_channels()
 	{
 		if (!$this->EE->cp->allowed_group('can_moderate_comments') && !$this->EE->cp->allowed_group('can_edit_all_comments'))

@@ -116,7 +116,7 @@
 
 		foreach ($data as $item)
 		{
-			$m[] = '<a href="?D=cp&C=addons_modules&M=show_module_cp&module=comment&method=edit_comment_form&comment_id='.$item['entry_id'].'">'.$item['entry_id'].'</a>';
+			$m[] = '<a href="?D=cp&C=content_publish&M=entry_form&channel_id='.$item['channel_id'].'&entry_id='.$item['entry_id'].'">'.$item['entry_id'].'</a>';
 			$m[] = '<a href="javascript:;" class="keyword_filter_value" rel="'.addslashes($item['title']).'">'.$item['title'].'</a>';
 			$m[] = '<a href="javascript:;" rel="'.$item['channel_id'].'" class="channel_filter_id">'.$item['channel_title'].'</a>';
 			$m[] = m62_convert_timestamp($item['entry_date']);
@@ -211,10 +211,11 @@
 		{
 			$status = (isset($status_select[$item['status']]) ? $status_select[$item['status']] : $item['status']);
 			$m[] = '<a href="?D=cp&C=addons_modules&M=show_module_cp&module=comment&method=edit_comment_form&comment_id='.$item['comment_id'].'">'.word_limiter($item['comment'], 10).'</a>';
-			$m[] = $item['title'];
-			$m[] = $item['name'];
+			$m[] = '<a href="javascript:;" rel="'.$item['title'].'" class="keyword_filter_value">'.$item['title'].'</a>';
+			$m[] = '<a href="javascript:;" rel="'.$item['name'].'" class="keyword_filter_value">'.$item['name'].'</a>';
 			$m[] = m62_convert_timestamp($item['comment_date']);
-			$m[] = $status;
+			$m[] = '<a href="javascript:;" rel="'.$item['channel_id'].'" class="channel_filter_id">'.$item['channel_title'].'</a>';
+			$m[] = '<a href="javascript:;" rel="'.$item['status'].'" class="status_filter_id">'.$status.'</a>';
 			$tdata[$i] = $m;
 			$i++;
 			unset($m);
@@ -286,12 +287,13 @@
 		$j_response['iTotalRecords'] = $total;
 		$j_response['iTotalDisplayRecords'] = $this->EE->mailinglist_data->get_total_emails($where);
 	
+		$mailing_lists = $this->EE->mailinglist_data->get_mailing_lists();
 		$data = $this->EE->mailinglist_data->get_list_emails($where, $perpage, $offset, $order);
 		foreach ($data as $item)
 		{
 			$m[] = '<a href="mailto:'.$item['email'].'">'.$item['email'].'</a>';
 			$m[] = $item['ip_address'];
-			$m[] = $item['list_names'];
+			$m[] = m62_create_mailinglist_links($item['list_names'], $mailing_lists);
 			$tdata[$i] = $m;
 			$i++;
 			unset($m);

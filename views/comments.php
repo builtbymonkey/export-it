@@ -57,6 +57,7 @@ if(count($comments) > 0)
 		lang('entry_title'),
 		lang('name'),
 		lang('date'),
+		lang('channel_title'),
 		lang('status')
 	);
 
@@ -65,10 +66,11 @@ if(count($comments) > 0)
 		$status = (isset($status_select[$comment['status']]) ? $status_select[$comment['status']] : $comment['status']);
 		$this->table->add_row(
 								'<a href="?D=cp&C=addons_modules&M=show_module_cp&module=comment&method=edit_comment_form&comment_id='.$comment['comment_id'].'">'.word_limiter($comment['comment'], 10).'</a>',
-								$comment['title'],
-								$comment['name'],
+								'<a href="javascript:;" rel="'.$comment['title'].'" class="keyword_filter_value">'.$comment['title'].'</a>',
+								'<a href="javascript:;" rel="'.$comment['name'].'" class="keyword_filter_value">'.$comment['name'].'</a>',
 								m62_convert_timestamp($comment['comment_date']),
-								$status
+								'<a href="javascript:;" rel="'.$comment['channel_id'].'" class="channel_filter_id">'.$comment['channel_title'].'</a>',
+								'<a href="javascript:;" rel="'.$comment['status'].'" class="status_filter_id">'.$status.'</a>'
 								);
 	}
 	

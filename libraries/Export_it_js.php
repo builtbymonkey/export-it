@@ -507,6 +507,14 @@ class Export_it_js
 		$("select#list_id").change(function () {
 			oTable.fnDraw();
 		});
+		
+		$(".mailinglist_filter_id").live("click", function(){ 
+
+			var replace = $(this).attr("rel");
+			$("select#list_id").val(replace);
+			oTable.fnDraw();
+			return false;
+		});			
 	
 	';
 	
@@ -670,7 +678,7 @@ class Export_it_js
 				"iDisplayLength": '.$perpage.', 
 				'.$extra.'
 				
-				"aoColumns": [null, null, null, null, null ],
+				"aoColumns": [null, null, null, null, null, null ],
 				
 				
 			"oLanguage": {
@@ -772,7 +780,33 @@ class Export_it_js
 
 		$("#custom_date_picker").mouseleave(function() {
 			$("#custom_date_picker").slideUp();
+		});	
+
+		$(".status_filter_id").live("click", function(){ 
+
+			var replace = $(this).attr("rel");
+			$("select#status").val(replace);
+			oTable.fnDraw();
+			return false;
+		});	
+		
+		$(".keyword_filter_value").live("click", function(){ 
+
+			var replace = $(this).attr("rel");
+			$("#keywords").val(replace);
+			oTable.fnDraw();
+			return false;
+		});
+
+		$(".channel_filter_id").live("click", function(){ 
+
+			var replace = $(this).attr("rel");
+			$("select#channel_id").val(replace);
+			oTable.fnDraw();
+			return false;
 		});			
+
+		
 	
 		';
 		
