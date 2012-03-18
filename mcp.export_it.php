@@ -185,7 +185,7 @@ class Export_it_mcp
 		$vars['keywords'] = '';
 		$vars['perpage_select_options'] = $this->EE->export_it_lib->perpage_select_options();
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('mailing_list');
-		$vars['mailing_lists'] = $this->EE->export_it_lib->get_mailing_lists();
+		$vars['mailing_lists'] = $this->EE->mailinglist_data->get_mailing_lists();
 		
 		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('mailing_list'));		
 		
