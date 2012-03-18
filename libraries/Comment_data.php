@@ -135,6 +135,10 @@ class Comment_data
 		}
 	}
 	
+	/**
+	 * Returns the date for the very first comment in the system.
+	 * @param mixed $where
+	 */
 	public function get_first_date($where = FALSE)
 	{
 		if($where)

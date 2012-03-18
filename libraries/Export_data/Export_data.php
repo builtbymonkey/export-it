@@ -34,16 +34,8 @@ class Export_data
 		$this->EE->load->helper('utilities');
 	}
 	
-	public function export_channel_entries($export_format, $channel_id, $date_range)
+	public function export_channel_entries($data, $export_format)
 	{
-		$where = array();
-		$where['channel_id'] = $channel_id;
-		if($date_range && $date_range != '')
-		{
-			$where['entry_date'] = (mktime()-($date_range*24*60*60));
-		}
-		
-		$data = $this->EE->channel_data->get_entries($where);
 		switch($export_format)
 		{	
 			case 'xml':

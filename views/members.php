@@ -83,7 +83,7 @@ if(count($members) > 0)
 								$member['screen_name'],
 								'<a href="mailto:'.$member['email'].'">'.$member['email'].'</a>',
 								m62_convert_timestamp($member['join_date']),
-								$member['group_title']
+								'<a href="javascript:;" rel="'.$member['group_id'].'" class="group_filter_id">'.$member['group_title'].'</a>'
 								);
 	}
 	

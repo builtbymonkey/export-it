@@ -54,5 +54,7 @@ $lang = array(
 'no_matching_comments' => 'No Comments Found',
 'start_date' => 'Start Date',
 'end_date' => 'End Date',
+'no_matching_channel_entries' => 'No Channel Entries Found',
+'channel_title' => 'Channel Title',
 ''=>''
 );

@@ -39,6 +39,24 @@ class Channel_data
 		'channel_id' => ''
 	);
 	
+	/**
+	 * Container for the fields so they're only processed once
+	 * @var array
+	 */
+	private $channel_fields = array();
+	
+	/**
+	 * Container for ALL the field ids so they're only processed once
+	 * @var array
+	 */
+	private $channel_field_ids = array();
+	
+	/**
+	 * Flag to disable translating custom fieldtypes. Will return limited dataset
+	 * @var bool
+	 */
+	public $translate_cft = TRUE;
+	
 	public function __construct()
 	{
 		$this->EE =& get_instance();
@@ -50,27 +68,67 @@ class Channel_data
 		$this->EE->load->library('member_data');
 	}
 	
-	public function get_entries(array $where)
+	/**
+	 * Returns the amount of entries based on $where
+	 * @param mixed $where
+	 */
+	public function get_total_entries($where = FALSE)
 	{
-		$this->EE->db->select("ct.*, cd.*");
-		
+		$this->EE->db->select("COUNT(title) AS count ");
 		$this->EE->db->from('channel_titles ct');
-		$this->EE->db->join('channel_data cd', 'ct.entry_id = cd.entry_id');
-				
-		if(isset($where['channel_id']))
+		$this->EE->db->join('channel_data cd', 'ct.entry_id = cd.entry_id', FALSE);
+		$this->EE->db->join('channels c', 'ct.channel_id = c.channel_id', FALSE);		
+		if($where)
 		{
-			$this->EE->db->where('ct.channel_id', $where['channel_id']);
+			$this->gen_entry_where($where);
 		}
 		
-		if(isset($where['entry_date']))
+		$data = $this->EE->db->get();
+		if($data->num_rows == '1')
 		{
-			$this->EE->db->where('ct.entry_date >=', $where['entry_date']);
+			return $data->row('count');
+		}		
+	}
+	
+	/**
+	 * Returns the entries
+	 * @param mixed $where
+	 */
+	public function get_entries($where = FALSE, $limit = FALSE, $page = '0', $order = 'entry_date DESC')
+	{
+		if(isset($where['search']) && !$this->channel_field_ids)
+		{
+			$this->channel_field_ids = $this->get_channel_field_ids();
+		}
+		
+		$this->EE->db->select("ct.*, cd.*, c.*");
+		$this->EE->db->from('channel_titles ct');
+		$this->EE->db->join('channel_data cd', 'ct.entry_id = cd.entry_id');
+		$this->EE->db->join('channels c', 'ct.channel_id = c.channel_id');
+
+		if($where)
+		{
+			$this->gen_entry_where($where);
+		}
+		
+		if($limit)
+		{
+			$this->EE->db->limit($limit, $page);
+		}
+	
+		if($order)
+		{
+			$this->EE->db->order_by($order);
 		}
 
 		$data = $this->EE->db->get();
-		return $this->_translate_custom_fields($data->result_array(), $where['channel_id']);
+		return $this->_translate_custom_fields($data->result_array());
 	}
 	
+	/**
+	 * Returns a single entry
+	 * @param array $where
+	 */
 	public function get_entry(array $where)
 	{
 		$this->EE->db->select("ct.*, cd.*");
@@ -96,6 +154,11 @@ class Channel_data
 		}
 	}
 
+	/**
+	 * Helper function to return only the entry_id from an entry
+	 * @param string $url_title
+	 * @param int $channel_id
+	 */
 	public function get_entry_id($url_title, $channel_id)
 	{
 		$entry = $this->EE->db->get_where('channel_titles', array('url_title' => $url_title, 'channel_id' => $channel_id));
@@ -106,13 +169,143 @@ class Channel_data
 		}		
 	}
 	
-	public function _translate_custom_fields(array $data, $channel_id)
+	/**
+	 * Returns the date for the very first entry in the system.
+	 * @param mixed $where
+	 */
+	public function get_first_date($where = FALSE)
 	{
-		$channel_data = $this->EE->channel_model->get_channel_info($channel_id)->row();
-		$channel_fields = $this->EE->channel_model->get_channel_fields($channel_data->field_group)->result_array();		
+		if($where)
+		{
+			$this->gen_entry_where($where);
+		}
+	
+		$this->EE->db->select_min('entry_date');
+		$data = $this->EE->db->get('channel_titles');
+		return $data->row('entry_date');
+	}	
+	
+	/**
+	 * Abstracts creation of the SQL WHERE
+	 * @param array $where
+	 */
+	public function gen_entry_where($where)
+	{
+		if(isset($where['date_range']) && $where['date_range'] != 'custom_date')
+		{
+			if(is_numeric($where['date_range']))
+			{
+				$this->EE->db->where('entry_date >', (mktime()-($where['date_range']*24*60*60)));
+			}
+			else
+			{
+				$parts = explode('to', $where['date_range']);
+				if(count($parts) == '2')
+				{
+					$start = strtotime($parts['0']);
+					$end = strtotime($parts['1']);
+					$where_date = " entry_date BETWEEN '$start' AND '$end'";
+					$this->EE->db->where($where_date, null, FALSE);
+				}
+			}
+	
+			unset($where['date_range']);
+		}
+	
+		if(isset($where['search']))
+		{
+			$search_where = array('ct.title', 'channel_title');
+			$cols = array();
+			foreach($search_where AS $field)
+			{
+				$cols[] = $field." LIKE '%".$where['search']."%'";
+			}
+			
+			if(count($this->channel_field_ids) >= '1')
+			{
+				foreach($this->channel_field_ids AS $field)
+				{
+					$cols[] = 'field_id_'.$field." LIKE '%".$where['search']."%'";
+				}
+			}
+			
+			if(count($cols) >= 1)
+			{
+				$str_where = " (".implode(' OR ', $cols).") ";
+				$this->EE->db->where($str_where, FALSE, FALSE);
+			}
+	
+			unset($where['search']);
+		}
+	
+		if(is_array($where) && count($where) >= '1')
+		{
+			foreach($where AS $key => $value)
+			{
+				$this->EE->db->where($key, $value, FALSE);
+			}
+		}
+		elseif(is_string($where))
+		{
+			$this->EE->db->where($where);
+		}
+	}	
+	
+	/**
+	 * Returns an array of the statuses for the order channel
+	 * @return array
+	 */
+	public function get_channel_statuses($channel_id = FALSE)
+	{
+		$channel_info = $this->EE->channel_model->get_channel_info($channel_id);
+		$status_group = FALSE;
+		foreach($channel_info->result_array() AS $row)
+		{
+			$status_group = $row['status_group'];
+			break;
+		}
+		
+		if($status_group)
+		{
+			return $this->EE->channel_model->get_channel_statuses($status_group)->result_array();
+		}
+	}
+
+	public function get_channel_field_ids()
+	{
+		$this->EE->db->select("field_id");
+		$this->EE->db->from('channel_fields cf');
+		$data = $this->EE->db->get();
+		$result = $data->result_array();
+		$return = array();
+		foreach($result AS $item)
+		{
+			$return[] = $item['field_id'];
+		}
+		
+		return $return;
+	}
+	
+	/**
+	 * Takes the raw entry data from the DB and returns an associative array with human friendly keys
+	 * @param array $data
+	 */
+	public function _translate_custom_fields(array $data)
+	{		
+		if($this->translate_cft === FALSE)
+		{
+			return $data;
+		}
 		
 		foreach($data AS $key => $entry)
 		{
+			if(!isset($this->channel_fields[$entry['channel_id']]))
+			{
+				$channel_data = $this->EE->channel_model->get_channel_info($entry['channel_id'])->row();
+				$this->channel_fields[$entry['channel_id']]  = $this->EE->channel_model->get_channel_fields($channel_data->field_group)->result_array();								
+			}
+
+			$channel_fields = $this->channel_fields[$entry['channel_id']];
 			$data[$key]['channel_name'] = $channel_data->channel_name;
 			if(isset($entry['author_id']))
 			{
@@ -144,6 +337,12 @@ class Channel_data
 		return $data;
 	}
 	
+	/**
+	 * Takes the raw custom field data and converts the stored data into the expected Custom Fieldtype structure
+	 * @param array $data
+	 * @param int $entry
+	 * @param string $field
+	 */
 	public function clean_custom_field($data, $entry, $field)
 	{
 		switch($field['field_type'])

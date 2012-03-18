@@ -34,3 +34,26 @@ if ( ! function_exists('m62_convert_timestamp'))
 		return mdate($format, $date);		
 	}
 }
+
+if( !function_exists('m62_status_color'))
+{
+	/**
+	 * Returns the status color based on $status
+	 * @param string $status
+	 * @param array $statuses
+	 * @return boolean|array
+	 */
+	function m62_status_color($status, array $statuses = array())
+	{
+		if(!is_array($statuses))
+		{
+			return FALSE;
+		}
+	
+		foreach($statuses AS $color)
+		{
+			if($status == $color['status'])
+				return $color['highlight'];
+		}
+	}	
+}
