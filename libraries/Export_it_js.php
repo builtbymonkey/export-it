@@ -1091,6 +1091,14 @@ class Export_it_js
 			return false;
 		});
 		
+		$(".status_filter_id").live("click", function(){ 
+
+			var status = $(this).attr("rel");
+			$("select#status").val(status);
+			oTable.fnDraw();
+			return false;
+		});
+		
 		$(".keyword_filter_value").live("click", function(){ 
 
 			var replace = $(this).attr("rel");

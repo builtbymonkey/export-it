@@ -139,7 +139,7 @@
 			$m[] = '<a href="javascript:;" class="keyword_filter_value" rel="'.addslashes($item['title']).'">'.$item['title'].'</a>';
 			$m[] = '<a href="javascript:;" rel="'.$item['channel_id'].'" class="channel_filter_id">'.$item['channel_title'].'</a>';
 			$m[] = m62_convert_timestamp($item['entry_date']);
-			$m[] = $item['status'];
+			$m[] = '<a href="javascript:;" rel="'.$item['status'].'" class="status_filter_id">'.$item['status'].'</a>';
 			$tdata[$i] = $m;
 			$i++;
 			unset($m);

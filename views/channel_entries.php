@@ -67,7 +67,7 @@ if(count($entries) > 0)
 								'<a href="javascript:;" rel="'.$entry['title'].'" class="keyword_filter_value">'.$entry['title'].'</a>',
 								'<a href="javascript:;" rel="'.$entry['channel_id'].'" class="channel_filter_id">'.$entry['channel_title'].'</a>',
 								m62_convert_timestamp($entry['entry_date']),
-								$entry['status']
+								'<a href="javascript:;" rel="'.$entry['status'].'" class="status_filter_id">'.$entry['status'].'</a>'
 								//'<span style="color:#'.m62_status_color($entry['status'], $order_channel_statuses).'">'.lang($entry['status']).'</span>'
 		);
 	}
