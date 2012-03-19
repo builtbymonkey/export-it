@@ -53,19 +53,8 @@ class Export_data
 		}		
 	}
 	
-	public function export_channel_entry($export_format, $entry_id, $url_title)
+	public function export_channel_entry($data, $export_format)
 	{
-		$where = array();
-		if($entry_id && $entry_id != '')
-		{
-			$where['entry_id'] = $entry_id;
-		}
-		else
-		{
-			$where['url_title'] = $url_title;
-		}
-		
-		$data = $this->EE->channel_data->get_entry($where);
 		switch($export_format)
 		{	
 			case 'xml':
@@ -140,34 +129,6 @@ class Export_data
 		}
 				
 		switch($format)
-		{
-			case 'xls':
-			default:
-				$this->download_array($data, TRUE, 'member_export.xls');
-			break;
-			
-			case 'ee_xml':
-				$this->download_ee_xml($data, 'ee_member_export.xml');
-			break;
-			
-			case 'xml':
-				$this->download_xml($data, 'member_export.xml', 'members', 'member');
-			break;
-			
-			case 'json':
-				$this->download_json($data, 'member_export.json');
-			break;			
-		}		
-	}
-	
-	public function export_member($export_format = 'xls', $member_id = '0', $include_custom_fields = FALSE, $complete_select = FALSE)
-	{
-		$data = $this->EE->member_data->get_member($member_id, $include_custom_fields, $complete_select);
-		if($this->disable_download)
-		{
-			$data = $this->sanitize_member($data);
-		}
-		switch($export_format)
 		{
 			case 'xls':
 			default:

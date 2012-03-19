@@ -22,10 +22,17 @@
  */
 class Member_data
 {
+	public $custom_fields = FALSE;
+	
 	public function __construct()
 	{
 		$this->EE =& get_instance();
 		$this->EE->load->model('member_model');
+		
+		if(!$this->custom_fields)
+		{
+			$this->custom_fields = $this->EE->member_model->get_custom_member_fields()->result_array();
+		}
 	}
 
 	public function register_update($data)
@@ -58,23 +65,15 @@ class Member_data
 			$this->EE->db->select("members.username, members.member_id, members.screen_name, members.email, members.join_date, members.last_visit, members.group_id, members.member_id, members.in_authorlist, member_groups.group_title");
 		}
 		
-		$this->EE->db->from('members');
-
-		if(is_array($where) && count($where) >= '1')
-		{
-			foreach($where AS $key => $value)
-			{
-				$this->EE->db->where($key, $value);
-			}
-		}
-		elseif($where)
-		{
-			$this->EE->db->where($where);
-		}
-		
+		$this->EE->db->from('members');	
 		$this->EE->db->join('member_groups', 'member_groups.group_id = members.group_id');
 		$this->EE->db->join('member_data', 'member_data.member_id = members.member_id');
 		
+		if($where)
+		{
+			$this->build_member_filter_where($where);
+		}
+				
 		if($include_custom_fields)
 		{
 			$this->EE->db->select('member_data.*');
@@ -102,39 +101,27 @@ class Member_data
 	
 	public function get_total_members($where = FALSE)
 	{
-		if(is_array($where) && count($where) >= '1')
+		if($where)
 		{
-			foreach($where AS $key => $value)
-			{
-				$this->EE->db->where($key, $value);
-			}
-		}
-		elseif($where)
-		{
-			$this->EE->db->where($where);
+			$this->build_member_filter_where($where);
 		}
 		
 		$this->EE->db->join('member_data', 'member_data.member_id = members.member_id');
+		$this->EE->db->join('member_groups', 'member_groups.group_id = members.group_id');
 		$data = $this->EE->db->count_all_results('members');
 		return $data;	
 	}
 	
 	public function get_first_date($where = FALSE)
 	{
-		if(is_array($where) && count($where) >= '1')
+		if($where)
 		{
-			foreach($where AS $key => $value)
-			{
-				$this->EE->db->where($key, $value);
-			}
-		}
-		elseif($where)
-		{
-			$this->EE->db->where($where);
+			$this->build_member_filter_where($where);
 		}	
 		
 		$this->EE->db->select_min('join_date');	
 		$this->EE->db->join('member_data', 'member_data.member_id = members.member_id');
+		$this->EE->db->join('member_groups', 'member_groups.group_id = members.group_id');
 		$data = $this->EE->db->get('members');
 		return $data->row('join_date');
 	}	
@@ -269,4 +256,65 @@ class Member_data
 		
 		return $arr;
 	}
+	
+	public function build_member_filter_where($where)
+	{	
+		if(isset($where['date_range']) && $where['date_range'] != 'custom_date')
+		{
+			if(is_numeric($where['date_range']))
+			{
+				$this->EE->db->where('join_date >', (mktime()-($where['date_range']*24*60*60)));
+			}
+			else
+			{
+				$parts = explode('to', $where['date_range']);
+				if(count($parts) == '2')
+				{
+					$start = strtotime($parts['0']);
+					$end = strtotime($parts['1']);
+					$where_date = " join_date BETWEEN '$start' AND '$end'";
+					$this->EE->db->where($where_date, null, FALSE);
+				}
+			}
+			
+			unset($where['date_range']);
+		}
+	
+		if(isset($where['search']))
+		{
+			$cols = array();
+			foreach($this->custom_fields AS $field)
+			{
+				$cols[] = "m_field_id_".$field['m_field_id']." LIKE '%".$where['search']."%'";
+			}
+				
+			$more = array('email', 'username','screen_name');
+			foreach($more AS $field)
+			{
+				$cols[] = $field." LIKE '%".$where['search']."%'";
+			}
+				
+			if(count($cols) >= 1)
+			{
+				$str_where = " (".implode(' OR ', $cols).") ";
+				$this->EE->db->where($str_where, null, FALSE);
+			}
+			
+			unset($where['search']);
+		}
+	
+		if(is_array($where) && count($where) >= '1')
+		{
+			foreach($where AS $key => $value)
+			{
+				$this->EE->db->where($key, $value);
+			}
+		}
+		elseif(is_string($where))
+		{
+			$this->EE->db->where($where);
+		}
+				
+		return $where;
+	}	
 }

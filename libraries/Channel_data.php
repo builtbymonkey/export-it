@@ -122,6 +122,8 @@ class Channel_data
 		}
 
 		$data = $this->EE->db->get();
+		
+		//echo $this->EE->db->last_query();
 		return $this->_translate_custom_fields($data->result_array());
 	}
 	

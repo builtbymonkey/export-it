@@ -41,8 +41,8 @@ class Api_server
 		$this->EE->load->library('member_data');
 		$this->EE->load->library('channel_data');
 		$this->EE->load->library('Export_data/export_data');
-		$this->EE->load->add_package_path(PATH_MOD.'mailinglist/'); 
-		$this->EE->load->model('mailinglist_model');
+		$this->EE->load->library('mailinglist_data');
+		$this->EE->load->library('comment_data');
 		$this->EE->load->library('encrypt');
 		$this->EE->load->library('Api_server/Api_auth');		
 		$this->settings = $this->EE->export_it_lib->get_settings();
@@ -50,6 +50,9 @@ class Api_server
 		$this->EE->export_data->disable_download = TRUE;			
 	}
 	
+	/**
+	 * Wrapper to exectute the API Server
+	 */
 	public function run()
 	{
 		$method = $this->method;
@@ -69,84 +72,221 @@ class Api_server
 	
 	public function get_members()
 	{
+		$export_format = $this->EE->input->get_post('format');
 		$group_id = $this->EE->input->get_post('group_id');
 		$include_custom_fields = $this->EE->input->get_post('include_custom_fields');
 		$complete_select = $this->EE->input->get_post('complete_select');
-		$this->EE->export_data->export_members($this->format, $group_id, $include_custom_fields, $complete_select);
+
+		$group_id = ($this->EE->input->get_post('group_id') && $this->EE->input->get_post('group_id') != '') ? $this->EE->input->get_post('group_id') : FALSE;
+		$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
+		$keywords = ($this->EE->input->get_post('keywords') && $this->EE->input->get_post('keywords') != '') ? $this->EE->input->get_post('keywords') : FALSE;
+		$perpage = ($this->EE->input->get_post('perpage')) ? $this->EE->input->get_post('perpage') : $this->settings['comments_list_limit'];
+		$page = ($this->EE->input->get_post('page')) ? $this->EE->input->get_post('page') : 0; // Display start point
+		
+		$where = array();
+		if($group_id)
+		{
+			$where['members.group_id'] = $group_id;
+		}
+		
+		if($keywords)
+		{
+			$where['search'] = $keywords;
+		}
+		
+		if($date_range)
+		{
+			$where['date_range'] = $date_range;
+		}
+		
+		$data = $this->EE->member_data->get_members($where, $include_custom_fields, $complete_select, $page, $perpage, FALSE);
+		$this->EE->export_data->export_members($data, $export_format);
 	}
 	
 	public function get_member()
 	{
+		$export_format = $this->EE->input->get_post('format');
 		$member_id = $this->EE->input->get_post('member_id');
-		if(!$member_id || $member_id == '')
-		{
-			$this->error(lang('member_id_missing'), 500);
-			exit;
-		}		
 		$include_custom_fields = $this->EE->input->get_post('include_custom_fields');
 		$complete_select = $this->EE->input->get_post('complete_select');
-		$this->EE->export_data->export_member($this->format, $member_id, $include_custom_fields, $complete_select);
+		$email = $this->EE->input->get_post('email');
+		$username = $this->EE->input->get_post('username');
+		$screen_name = $this->EE->input->get_post('screen_name');
+		
+		if(!$member_id && !$email && !$username && !$screen_name)
+		{
+			$this->error(lang('missing_required_member_fields'), 500);
+			exit;			
+		}
+		
+		$where = array();
+		
+		
+		if($member_id)
+		{
+			$where['members.member_id'] = $member_id;
+		}
+		elseif($email)
+		{
+			$where['members.email'] = $email;
+		}
+		elseif($username)
+		{
+			$where['members.username'] = $username;
+		}
+		elseif($screen_name)
+		{
+			$where['members.screen_name'] = $screen_name;
+		}			
+		
+		$data = $this->EE->member_data->get_members($where, $include_custom_fields, $complete_select, FALSE, 1, FALSE);
+		$this->EE->export_data->export_members($data, $export_format);
 	}	
 	
 	public function get_channel_entries()
 	{
-		$date_range = $this->EE->input->get_post('date_range');
-		$channel_id = $this->EE->input->get_post('channel_id');
-		if(!$channel_id || $channel_id == '')
+		$keywords = ($this->EE->input->get_post('keywords')) ? $this->EE->input->get_post('keywords') : FALSE;
+		$channel_id = ($this->EE->input->get_post('channel_id') && $this->EE->input->get_post('channel_id') != '') ? $this->EE->input->get_post('channel_id') : FALSE;
+		$status = ($this->EE->input->get_post('status') && $this->EE->input->get_post('status') != '') ? $this->EE->input->get_post('status') : FALSE;
+		$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
+	
+		$perpage = ($this->EE->input->get_post('perpage')) ? $this->EE->input->get_post('perpage') : $this->settings['channel_entries_list_limit'];
+		$offset = ($this->EE->input->get_post('iDisplayStart')) ? $this->EE->input->get_post('iDisplayStart') : 0; // Display start point
+		
+		$where = array();
+		if($channel_id)
 		{
-			$this->error(lang('channel_id_missing'), 500);
-			exit;
+			$where['ct.channel_id'] = $channel_id;
 		}
-				
-		$this->EE->export_data->export_channel_entries($this->format, $channel_id, $date_range);		
+		
+		if($keywords)
+		{
+			$where['search'] = $keywords;
+		}
+		
+		if($status)
+		{
+			$where['status'] = $status;
+		}
+		
+		if($date_range)
+		{
+			$where['date_range'] = $date_range;
+		}		
+
+		$data = $this->EE->channel_data->get_entries($where, $perpage, $offset, FALSE);
+		$this->EE->export_data->export_channel_entries($data, $this->format);		
 	}
 	
 	public function get_channel_entry()
 	{
-		$entry_id = $this->EE->input->get_post('entry_id');
-		$url_title = $this->EE->input->get_post('url_title');
-		$channel_id = $this->EE->input->get_post('channel_id');
+		$entry_id = ($this->EE->input->get_post('entry_id')) ? $this->EE->input->get_post('entry_id') : FALSE;
+		$url_title = ($this->EE->input->get_post('url_title')) ? $this->EE->input->get_post('url_title') : FALSE;
 		if((!$entry_id || $entry_id == '') && (!$url_title || $url_title == ''))
 		{
 			$this->error(lang('entry_id_url_title_missing'), 500);
 			exit;
 		}
-				
-		$this->EE->export_data->export_channel_entry($this->format, $entry_id, $url_title);		
+		
+		$where = array();
+		if($entry_id && $entry_id != '')
+		{
+			$where['cd.entry_id'] = $entry_id;
+		}
+		else
+		{
+			$where['url_title'] = $url_title;
+		}
+		
+		$data = $this->EE->channel_data->get_entries($where, 1);
+		$this->EE->export_data->export_channel_entries($data, $this->format);		
 	}	
 	
 	public function get_comments()
 	{
-		$date_range = $this->EE->input->get_post('date_range');
-		$status = $this->EE->input->get_post('status');
-		$channel_id = $this->EE->input->get_post('channel_id');
-		$entry_id = $this->EE->input->get_post('entry_id');
+		$keywords = ($this->EE->input->get_post('keywords')) ? $this->EE->input->get_post('keywords') : FALSE;
+		$channel_id = ($this->EE->input->get_post('channel_id') && $this->EE->input->get_post('channel_id') != '') ? $this->EE->input->get_post('channel_id') : FALSE;
+		$entry_id = ($this->EE->input->get_post('entry_id') && $this->EE->input->get_post('entry_id') != '') ? $this->EE->input->get_post('entry_id') : FALSE;
+		$status = ($this->EE->input->get_post('status') && $this->EE->input->get_post('status') != '') ? $this->EE->input->get_post('status') : FALSE;
+		$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
+		
+		$perpage = ($this->EE->input->get_post('perpage')) ? $this->EE->input->get_post('perpage') : $this->settings['comments_list_limit'];
+		$offset = ($this->EE->input->get_post('limit')) ? $this->EE->input->get_post('limit') : 0; // Display start point
+		$order = ($this->EE->input->get_post('order')) ? $this->EE->input->get_post('order') : 'comment_date DESC';
+		
 		if((!$channel_id || $channel_id == '') && (!$entry_id || $entry_id == ''))
 		{
 			$this->error(lang('channel_entry_id_missing'), 500);
 			exit;
 		}
-				
-		$this->EE->export_data->export_comments($this->format, $date_range, $status, $channel_id, $entry_id);		
+		
+		$where = array();
+		if($channel_id)
+		{
+			$where['comments.channel_id'] = $channel_id;
+		}
+		else
+		{
+			if($entry_id)
+			{
+				$where['comments.entry_id'] = $entry_id;
+			}			
+		}
+		
+		if($keywords)
+		{
+			$where['search'] = $keywords;
+		}
+		
+		if($status)
+		{
+			$where['comments.status'] = $status;
+		}
+		
+		if($date_range)
+		{
+			$where['date_range'] = $date_range;
+		}		
+
+		$data = $this->EE->comment_data->get_comments($where, $perpage, $offset, $order);
+		$this->EE->export_data->export_comments($data, $this->format);		
 	}
 	
 	public function get_comment()
 	{
-		$comment_id = $this->EE->input->get_post('comment_id');
+		$comment_id = ($this->EE->input->get_post('comment_id')) ? $this->EE->input->get_post('comment_id') : FALSE;
 		if((!$comment_id || $comment_id == ''))
 		{
 			$this->error(lang('comment_id_missing'), 500);
 			exit;
 		}
-				
-		$this->EE->export_data->export_comment($this->format, $comment_id);		
+
+		$where['comment_id'] = $comment_id;
+		$data = $this->EE->comment_data->get_comments($where, 1, FALSE, FALSE);
+		$this->EE->export_data->export_comments($data, $this->format);	
 	}
 	
 	public function get_mailing_list()
 	{
-		$list_id = $this->EE->input->get_post('list_id');
-		$exclude_duplicates = $this->EE->input->get_post('exclude_duplicates');
-		$this->EE->export_data->export_mailing_list($this->format, $exclude_duplicates, $list_id);			
+		$keywords = ($this->EE->input->get_post('keywords')) ? $this->EE->input->get_post('keywords') : FALSE;
+		$list_id = ($this->EE->input->get_post('list_id') && $this->EE->input->get_post('list_id') != '') ? $this->EE->input->get_post('list_id') : FALSE;
+		$perpage = ($this->EE->input->get_post('perpage')) ? $this->EE->input->get_post('perpage') : $this->settings['mailing_list_limit'];
+		$offset = ($this->EE->input->get_post('offset')) ? $this->EE->input->get_post('offset') : 0; // Display start point
+		$order = ($this->EE->input->get_post('order')) ? $this->EE->input->get_post('order') : 'user_id DESC'; // Display start point
+		
+		$where = array();
+		if($list_id)
+		{
+			$where['list_id'] = $list_id;
+		}
+		
+		if($keywords)
+		{
+			$where['search'] = $keywords;
+		}		
+
+		$data = $this->EE->mailinglist_data->get_list_emails($where, $perpage, $offset, $order);
+		$this->EE->export_data->export_mailing_list($data, $this->format);			
 	}
 	
 	public function get_category()
@@ -264,6 +404,12 @@ class Api_server
 		}		
 	}
 	
+	/**
+	 * Error handler
+	 * @param unknown_type $output
+	 * @param unknown_type $http_code
+	 * @param unknown_type $format
+	 */
 	public function error($output, $http_code, $format = 'json')
 	{
 		$return = json_encode(array('status' => $http_code, 'message' => $output));

@@ -344,7 +344,7 @@ class Export_it_mcp
 					
 			case 'channel_entries':
 	
-				$keywords = ($this->EE->input->get_post('k_search')) ? $this->EE->input->get_post('k_search') : FALSE;
+				$keywords = ($this->EE->input->get_post('keywords')) ? $this->EE->input->get_post('keywords') : FALSE;
 				$channel_id = ($this->EE->input->get_post('channel_id') && $this->EE->input->get_post('channel_id') != '') ? $this->EE->input->get_post('channel_id') : FALSE;
 				$status = ($this->EE->input->get_post('status') && $this->EE->input->get_post('status') != '') ? $this->EE->input->get_post('status') : FALSE;
 				$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
@@ -384,9 +384,24 @@ class Export_it_mcp
 	
 				$group_id = ($this->EE->input->get_post('group_id') && $this->EE->input->get_post('group_id') != '') ? $this->EE->input->get_post('group_id') : FALSE;
 				$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
-				$keyword = ($this->EE->input->get_post('member_keywords') && $this->EE->input->get_post('member_keywords') != '') ? $this->EE->input->get_post('member_keywords') : FALSE;
+				$keywords = ($this->EE->input->get_post('member_keywords') && $this->EE->input->get_post('member_keywords') != '') ? $this->EE->input->get_post('member_keywords') : FALSE;
 	
-				$where = $this->EE->json_ordering->build_member_filter_where($keyword, $date_range, $group_id);
+				$where = array();
+				if($group_id)
+				{
+					$where['members.group_id'] = $group_id;
+				}
+				
+				if($keywords)
+				{
+					$where['search'] = $keywords;
+				}
+				
+				if($date_range)
+				{
+					$where['date_range'] = $date_range;
+				}
+				
 				$data = $this->EE->member_data->get_members($where, $include_custom_fields, $complete_select, FALSE, 0, FALSE);
 	
 				$this->EE->export_data->export_members($data, $export_format);
