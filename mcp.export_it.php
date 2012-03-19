@@ -166,6 +166,17 @@ class Export_it_mcp
 		die($this->EE->json_ordering->channel_entries_ordering($this->perpage, $this->url_base));
 	}	
 	
+	public function channel_options_ajax_filter()
+	{
+		$channel_id = ($this->EE->input->get_post('channel_id')) ? $this->EE->input->get_post('channel_id') : FALSE;
+		if(!$channel_id)
+		{
+			return $this->EE->javascript->generate_json(array('' => 'All'), TRUE);
+		}
+		
+		die($this->EE->json_ordering->channel_options($channel_id));
+	}
+	
 	public function comments()
 	{
 		

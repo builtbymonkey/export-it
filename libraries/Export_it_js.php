@@ -1063,8 +1063,20 @@ class Export_it_js
 		});
 					
 		$("select#channel_id").change(function () {
-			alert("fdsa");
-				oTable.fnDraw();
+			
+			var status_channel = $(this).val();
+			$("select#status option").each(function(i, option){ $(option).remove(); });
+			$.getJSON(EE.BASE+"&C=addons_modules&M=show_module_cp&module=export_it&method=channel_options_ajax_filter&channel_id="+status_channel+"&time=" + time, function(data) {
+			
+				$.each(data, function(val, text) {
+					
+				    $("select#status").append(
+				        $("<option></option>").val(val).html(text)
+				    );
+				});
+			
+			});
+			oTable.fnDraw();
 		});
 		
 		$("select#status").change(function () {

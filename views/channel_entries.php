@@ -17,7 +17,7 @@ if(count($entries) > 0)
 			<div class="group">
 				<?=form_dropdown('channel_id', $channel_options, FALSE, 'id="channel_id"')?> 
 				<?=form_dropdown('date_range', $date_select_options, $date_selected, 'id="date_range"').NBS.NBS?>	
-				<?=form_dropdown('status', $status_select, FALSE, 'id="status"')?> 				
+				<?=form_dropdown('status', array('' => 'All'), FALSE, 'id="status"')?> 				
 				<?=form_dropdown('export_format', $export_format, FALSE, 'id="export_format"')?> 
 				
 				<input type="hidden" value="" name="perpage" id="f_perpage" />

@@ -37,6 +37,25 @@
 		$this->dbprefix = $this->EE->db->dbprefix;
 	}
 	
+	public function channel_options($channel_id)
+	{
+		$data = $this->EE->channel_data->get_channel_statuses($channel_id);
+		if(count($data) == '0')
+		{
+			$return = array('' => 'All');
+		}
+		else
+		{
+			$return = array('' => 'All');
+			foreach($data AS $status)
+			{
+				$return[$status['status']] = $status['status'];
+			}
+		}
+		
+		return $this->EE->javascript->generate_json($return, TRUE);
+	}
+	
 	/**
 	 * Creates the JSON for the Channel Entry export CP method
 	 * @param int $perpage
