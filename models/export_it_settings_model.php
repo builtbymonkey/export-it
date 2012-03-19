@@ -95,6 +95,12 @@ class Export_it_settings_model extends CI_Model
 		//now check to make sure they're all there and set default values if not
 		foreach ($this->_defaults as $key => $value)
 		{	
+			//setup the override check
+			if(isset($this->config->config['export_it'][$key]))
+			{
+				$settings[$key] = $this->config->config['export_it'][$key];
+			}
+						
 			if(!isset($settings[$key]))
 			{
 				$settings[$key] = $value;

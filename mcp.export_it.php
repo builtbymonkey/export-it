@@ -276,10 +276,16 @@ class Export_it_mcp
 		
 		$this->EE->cp->add_js_script('ui', 'accordion'); 
 		$this->EE->javascript->output($this->EE->export_it_js->get_accordian_css()); 		
-		$this->EE->javascript->compile();	
+		$this->EE->javascript->compile();
+		
+		$vars = array();
+		$vars['settings_disable'] = FALSE;
+		if(isset($this->EE->config->config['export_it']))
+		{
+			$vars['settings_disable'] = 'disabled="disabled"';
+		}		
 
 		$this->settings['api_key'] = $this->EE->encrypt->decode($this->settings['api_key']);
-		$vars = array();
 		$vars['api_url'] = $this->EE->config->config['site_url'].'?ACT='.$this->EE->cp->fetch_action_id('Export_it', 'api').'&key='.$this->settings['api_key'];
 		$vars['settings'] = $this->settings;
 		return $this->EE->load->view('settings', $vars, TRUE);

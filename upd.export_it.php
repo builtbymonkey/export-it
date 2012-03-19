@@ -20,19 +20,22 @@
  * @author		Eric Lamb
  * @filesource 	./system/expressionengine/third_party/export_it/upd.export_it.php
  */
-class Export_it_upd { 
+class Export_it_upd 
+{ 
 
-    public $version = '1.0.6'; 
+    public $class = '';
     
-    public $name = 'Export_it';
-    
-    public $class = 'Export_it';
-    
-    public $settings_table = 'export_it_settings';
+    public $settings_table = ''; 
          
     public function __construct() 
     { 
 		$this->EE =& get_instance();
+		$path = dirname(realpath(__FILE__));
+		include $path.'/config'.EXT;
+		$this->class = $config['class_name'];
+		$this->settings_table = $config['settings_table'];
+		$this->version = $config['version'];
+		$this->ext_class_name = $config['ext_class_name'];		
     } 
     
 	public function install() 
@@ -40,7 +43,7 @@ class Export_it_upd {
 		$this->EE->load->dbforge();
 	
 		$data = array(
-			'module_name' => $this->name,
+			'module_name' => $this->class,
 			'module_version' => $this->version,
 			'has_cp_backend' => 'y',
 			'has_publish_fields' => 'n'
@@ -48,7 +51,7 @@ class Export_it_upd {
 	
 		$this->EE->db->insert('modules', $data);
 		
-		$sql = "INSERT INTO exp_actions (class, method) VALUES ('".$this->name."', 'api')";
+		$sql = "INSERT INTO exp_actions (class, method) VALUES ('".$this->class."', 'api')";
 		$this->EE->db->query($sql);
 		
 		$this->add_settings_table();		
