@@ -56,13 +56,20 @@ class Export_it_lib
 	 */
 	public function get_right_menu()
 	{
-		return array(
+		$menu = array(
 				'members'		=> $this->url_base.'members',
 				'channel_entries'	=> $this->url_base.'channel_entries',
 				'comments'	=> $this->url_base.'comments',
-				'mailing_list'	=> $this->url_base.'mailing_list',
 				'settings'	=> $this->url_base.'settings'
 		);
+		
+		if($this->is_installed_module('mailing_list'))
+		{
+			$menu['mailing_list'] = $this->url_base.'mailing_list';
+		}
+		
+		return $menu;
+		
 	}
 
 	/**
@@ -219,6 +226,15 @@ class Export_it_lib
 		$this->EE->pagination->initialize($config);
 		return $this->EE->pagination->create_links();		
 	}
+	
+	public function is_installed_module($module_name)
+	{
+		$data = $this->EE->db->select('module_name')->from('modules')->like('module_name', $module_name)->get();
+		if($data->num_rows == '1')
+		{
+			return TRUE;
+		}
+	}	
 	
 	
 }

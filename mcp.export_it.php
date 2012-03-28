@@ -49,10 +49,7 @@ class Export_it_mcp
 		$this->EE->load->library('comment_data');
 		$this->EE->load->library('encrypt');
 		$this->EE->load->library('json_ordering');
-		$this->EE->load->library('Export_data/export_data');
-		
-		$this->EE->load->add_package_path(PATH_MOD.'mailinglist/'); 
-		$this->EE->load->model('mailinglist_model');		
+		$this->EE->load->library('Export_data/export_data');	
 
 		$this->settings = $this->EE->export_it_lib->get_settings();		
 
@@ -196,7 +193,6 @@ class Export_it_mcp
 		$vars['keywords'] = '';
 		$vars['perpage_select_options'] = $this->EE->export_it_lib->perpage_select_options();
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('mailing_list');
-		$vars['mailing_lists'] = $this->EE->mailinglist_data->get_mailing_lists();
 		
 		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('mailing_list'));		
 		

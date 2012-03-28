@@ -81,7 +81,8 @@ class Api_server
 		$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
 		$keywords = ($this->EE->input->get_post('keywords') && $this->EE->input->get_post('keywords') != '') ? $this->EE->input->get_post('keywords') : FALSE;
 		$perpage = ($this->EE->input->get_post('perpage')) ? $this->EE->input->get_post('perpage') : $this->settings['comments_list_limit'];
-		$page = ($this->EE->input->get_post('page')) ? $this->EE->input->get_post('page') : 0; // Display start point
+		$offset = ($this->EE->input->get_post('offset')) ? $this->EE->input->get_post('offset') : 0; // Display start point
+		$order = ($this->EE->input->get_post('order')) ? $this->EE->input->get_post('order') : 'member_id DESC'; // Display start point
 		
 		$where = array();
 		if($group_id)
@@ -99,7 +100,7 @@ class Api_server
 			$where['date_range'] = $date_range;
 		}
 		
-		$data = $this->EE->member_data->get_members($where, $include_custom_fields, $complete_select, $page, $perpage, FALSE);
+		$data = $this->EE->member_data->get_members($where, $include_custom_fields, $complete_select, $offset, $perpage, FALSE);
 		$this->EE->export_data->export_members($data, $export_format);
 	}
 	
@@ -120,8 +121,6 @@ class Api_server
 		}
 		
 		$where = array();
-		
-		
 		if($member_id)
 		{
 			$where['members.member_id'] = $member_id;
@@ -151,7 +150,8 @@ class Api_server
 		$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
 	
 		$perpage = ($this->EE->input->get_post('perpage')) ? $this->EE->input->get_post('perpage') : $this->settings['channel_entries_list_limit'];
-		$offset = ($this->EE->input->get_post('iDisplayStart')) ? $this->EE->input->get_post('iDisplayStart') : 0; // Display start point
+		$offset = ($this->EE->input->get_post('offset')) ? $this->EE->input->get_post('offset') : 0; // Display start point
+		$order = ($this->EE->input->get_post('order')) ? $this->EE->input->get_post('order') : 'entry_date DESC'; // Display start point
 		
 		$where = array();
 		if($channel_id)
@@ -277,7 +277,7 @@ class Api_server
 		$where = array();
 		if($list_id)
 		{
-			$where['list_id'] = $list_id;
+			$where['mailing_list.list_id'] = $list_id;
 		}
 		
 		if($keywords)
@@ -340,8 +340,12 @@ class Api_server
 			$this->error(lang('username_password_invalid'), 500);
 			exit;			
 		}
-
-		$this->EE->export_data->export_member($this->format, $authorized->member('member_id'));
+		
+		$where = array();
+		$where['members.member_id'] = $authorized->member('member_id');
+		
+		$data = $this->EE->member_data->get_members($where, FALSE, FALSE, FALSE, 1, FALSE);
+		$this->EE->export_data->export_members($data, $this->format);		
 	}
 	
 	public function get_file()

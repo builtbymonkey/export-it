@@ -45,7 +45,16 @@ class Export_it_ext
 	public function __construct()
 	{
 		$this->EE =& get_instance();
-		$this->EE->load->library('email');		
+		$this->EE->load->library('email');
+		$path = dirname(realpath(__FILE__));
+		include_once $path.'/config'.EXT;
+		$this->description = $config['description'];
+		$this->docs_url = $config['docs_url'];
+		$this->class = $config['class_name'];
+		$this->settings_table = $config['settings_table'];
+		$this->version = $config['version'];
+		$this->mod_name = $config['mod_url_name'];
+		$this->ext_class_name = $config['ext_class_name'];				
 	}
 	
 	public function settings_form()
