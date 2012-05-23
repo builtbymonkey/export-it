@@ -50,7 +50,7 @@ class Export_it_ext
 		include_once $path.'/config'.EXT;
 		$this->description = $config['description'];
 		$this->docs_url = $config['docs_url'];
-		$this->class = $config['class_name'];
+		$this->class = $this->name = $config['class_name'];
 		$this->settings_table = $config['settings_table'];
 		$this->version = $config['version'];
 		$this->mod_name = $config['mod_url_name'];
