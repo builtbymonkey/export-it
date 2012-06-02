@@ -17,8 +17,13 @@ if(count($entries) > 0)
 			<div class="group">
 				<?=form_dropdown('channel_id', $channel_options, FALSE, 'id="channel_id"')?> 
 				<?=form_dropdown('date_range', $date_select_options, $date_selected, 'id="date_range"').NBS.NBS?>	
-				<?=form_dropdown('status', array('' => 'All'), FALSE, 'id="status"')?> 				
-				<?=form_dropdown('export_format', $export_format, FALSE, 'id="export_format"')?> 
+				<?=form_dropdown('status', array('' => 'All'), FALSE, 'id="status"')?>
+				<?=form_dropdown('category', array('' => 'All'), FALSE, 'id="category"')?> 	 				
+				<?=form_dropdown('export_format', $export_format, FALSE, 'id="export_format"')?>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+				
+				<?=form_label(lang('complete_select'), 'complete_select')?>&nbsp;
+				<?=form_checkbox('complete_select', '1', FALSE, 'id="complete_select"')?> 				 
 				
 				<input type="hidden" value="" name="perpage" id="f_perpage" />
 				<input type="hidden" value="<?php echo $default_start_date; ?>" id="default_start_date" />

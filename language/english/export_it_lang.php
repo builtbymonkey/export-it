@@ -10,6 +10,7 @@ $lang = array(
 
 // Additional Key => Value pairs go here
 'main' => 'Main',
+'license_number' => 'License Number',
 'channel_entries' => 'Channel Entries',
 'comments' => 'Comments',
 'mailing_list' => 'Mailing List',

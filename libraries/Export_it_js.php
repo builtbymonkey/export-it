@@ -862,6 +862,7 @@ class Export_it_js
 				iRequestEnd = iRequestStart + iRequestLength,
 				k_search    = document.getElementById("keywords"),
 				channel_id       = document.getElementById("channel_id"),
+				category = document.getElementById("category"),
 				status       = document.getElementById("status"),
 				date_range       = document.getElementById("date_range");
 				f_perpage       = document.getElementById("f_perpage");
@@ -878,6 +879,7 @@ class Export_it_js
 				{ "name": "k_search", "value": k_search_value() },
 				{ "name": "channel_id", "value": channel_id.value },
 				{ "name": "status", "value": status.value },
+				{ "name": "category", "value": category.value },
 				{ "name": "date_range", "value": date_range.value },
 				{ "name": "f_perpage", "value": f_perpage.value }
 			 );
@@ -930,6 +932,7 @@ class Export_it_js
 						{ "name": "k_search", "value": k_search_value() },
 						{ "name": "channel_id", "value": channel_id.value },
 						{ "name": "status", "value": status.value },
+						{ "name": "category", "value": category.value },
 						{ "name": "date_range", "value": date_range.value },
 						{ "name": "f_perpage", "value": f_perpage.value }
 					 );
@@ -1001,9 +1004,25 @@ class Export_it_js
 			var keywords = $("#keywords").val();
 			var format = $("#export_format").val();
 			var status = $("#status").val();
-			var dataString = "status="+status+"&format=" +format+ "&date_range="+ date_range + "&channel_id=" + channel_id + "&keywords=" + keywords;
+			var category = $("#category").val();
+			if($("#complete_select").is(":checked"))
+			{
+				complete_select = "1";
+			}
+			else
+			{
+				complete_select = "0";
+			}
+			var dataString = "status="+status+"&category=" + category + "&complete_select=" + complete_select + "&format=" +format+ "&date_range="+ date_range + "&channel_id=" + channel_id + "&keywords=" + keywords;
+			if(channel_id == "0")
+			{
+				alert("Please select a channel first");
+			}
+			else
+			{
+				window.location.replace(EE.BASE+"&C=addons_modules&M=show_module_cp&module=export_it&method=export&type=channel_entries&"+dataString);	
+			}
 			
-			window.location.replace(EE.BASE+"&C=addons_modules&M=show_module_cp&module=export_it&method=export&type=channel_entries&"+dataString);	
 			return false;
 		});
 		
@@ -1064,9 +1083,9 @@ class Export_it_js
 					
 		$("select#channel_id").change(function () {
 			
-			var status_channel = $(this).val();
+			var channel = $(this).val();
 			$("select#status option").each(function(i, option){ $(option).remove(); });
-			$.getJSON(EE.BASE+"&C=addons_modules&M=show_module_cp&module=export_it&method=channel_options_ajax_filter&channel_id="+status_channel+"&time=" + time, function(data) {
+			$.getJSON(EE.BASE+"&C=addons_modules&M=show_module_cp&module=export_it&method=channel_options_ajax_filter&option_type=status&channel_id="+channel+"&time=" + time, function(data) {
 			
 				$.each(data, function(val, text) {
 					
@@ -1076,12 +1095,30 @@ class Export_it_js
 				});
 			
 			});
+						
+
+			$("select#category option").each(function(i, option){ $(option).remove(); });
+			$.getJSON(EE.BASE+"&C=addons_modules&M=show_module_cp&module=export_it&method=channel_options_ajax_filter&option_type=category&channel_id="+channel+"&time=" + time, function(data) {
+			
+				$.each(data, function(val, text) {
+					
+				    $("select#category").append(
+				        $("<option></option>").val(val).html(text)
+				    );
+				});
+			
+			});						
+												
 			oTable.fnDraw();
 		});
 		
 		$("select#status").change(function () {
 				oTable.fnDraw();
-		});	
+		});
+
+		$("select#category").change(function () {
+				oTable.fnDraw();
+		});						
 
 		$(".channel_filter_id").live("click", function(){ 
 

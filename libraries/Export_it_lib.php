@@ -59,14 +59,15 @@ class Export_it_lib
 		$menu = array(
 				'members'		=> $this->url_base.'members',
 				'channel_entries'	=> $this->url_base.'channel_entries',
-				'comments'	=> $this->url_base.'comments',
-				'settings'	=> $this->url_base.'settings'
+				'comments'	=> $this->url_base.'comments'
 		);
 		
-		if($this->is_installed_module('mailing_list'))
+		if($this->is_installed_module('Mailinglist'))
 		{
 			$menu['mailing_list'] = $this->url_base.'mailing_list';
 		}
+		
+		$menu['settings'] = $this->url_base.'settings';
 		
 		return $menu;
 		

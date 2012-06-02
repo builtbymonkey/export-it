@@ -32,6 +32,8 @@ class Mailinglist_data
 	{
 		$this->EE =& get_instance();
 		$this->dbprefix = $this->EE->db->dbprefix;
+		$this->EE->load->add_package_path(PATH_MOD.'mailinglist/');
+		$this->EE->load->model('mailinglist_model');
 	}
 	
 	/**
@@ -49,10 +51,7 @@ class Mailinglist_data
 		{
 			$sql = "SELECT COUNT(DISTINCT(email)) AS count FROM ".$this->dbprefix."mailing_list ";
 			$data = $this->EE->db->query($sql)->row();
-			$data = $data->count;
-			
 		}
-		
 		
 		return $data;		
 	}

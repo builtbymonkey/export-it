@@ -37,9 +37,20 @@
 		$this->dbprefix = $this->EE->db->dbprefix;
 	}
 	
-	public function channel_options($channel_id)
+	public function channel_options($channel_id, $type = 'status')
 	{
-		$data = $this->EE->channel_data->get_channel_statuses($channel_id);
+		switch($type)
+		{
+			case 'status':
+			default:
+				$data = $this->EE->channel_data->get_channel_statuses($channel_id);
+			break;
+			
+			case 'category':
+				$data = $this->EE->channel_data->get_channel_categories($channel_id);
+			break;
+		}
+
 		if(count($data) == '0')
 		{
 			$return = array('' => 'All');
@@ -47,9 +58,20 @@
 		else
 		{
 			$return = array('' => 'All');
-			foreach($data AS $status)
+			foreach($data AS $item)
 			{
-				$return[$status['status']] = $status['status'];
+				switch($type)
+				{
+					case 'status':
+					default:				
+						$return[$item['status']] = $item['status'];
+					break;
+					
+					case 'category':
+						$return[$item['cat_id']] = $item['cat_name'];
+					break;					
+					
+				}
 			}
 		}
 		
@@ -69,7 +91,8 @@
 		$channel_id = ($this->EE->input->get_post('channel_id') && $this->EE->input->get_post('channel_id') != '') ? $this->EE->input->get_post('channel_id') : FALSE;
 		$status = ($this->EE->input->get_post('status') && $this->EE->input->get_post('status') != '') ? $this->EE->input->get_post('status') : FALSE;
 		$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
-	
+		$category = ($this->EE->input->get_post('category') && $this->EE->input->get_post('category') != '') ? $this->EE->input->get_post('category') : FALSE;
+		
 		$perpage = ($this->EE->input->get_post('perpage')) ? $this->EE->input->get_post('perpage') : $this->settings['comments_list_limit'];
 		$offset = ($this->EE->input->get_post('iDisplayStart')) ? $this->EE->input->get_post('iDisplayStart') : 0; // Display start point
 		$sEcho = $this->EE->input->get_post('sEcho');
@@ -119,6 +142,19 @@
 		{
 			$where['status'] = $status;
 		}
+		
+		if($category)
+		{
+			$cat_where = array('cat_id' => $category);
+			$entry_ids = $this->EE->channel_data->get_category_posts($cat_where);
+			$ids = array();
+			foreach($entry_ids AS $entry_id)
+			{
+				$ids[] = $entry_id['entry_id'];
+			}
+			
+			$where['ct.entry_id'] = $ids;
+		}		
 	
 		if($date_range)
 		{
@@ -302,9 +338,15 @@
 		}
 		
 		$total = $this->EE->mailinglist_data->get_total_emails();
+		$total_records = $this->EE->mailinglist_data->get_total_emails($where);
+		if(isset($total_records->count))
+		{
+			$total_records = $total_records->count;
+		}
+		
 		$j_response['sEcho'] = $sEcho;
-		$j_response['iTotalRecords'] = $total;
-		$j_response['iTotalDisplayRecords'] = $this->EE->mailinglist_data->get_total_emails($where);
+		$j_response['iTotalRecords'] = $total->count;
+		$j_response['iTotalDisplayRecords'] = $total_records;
 	
 		$mailing_lists = $this->EE->mailinglist_data->get_mailing_lists();
 		$data = $this->EE->mailinglist_data->get_list_emails($where, $perpage, $offset, $order);

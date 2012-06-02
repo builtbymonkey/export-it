@@ -152,6 +152,19 @@ class Member_data
 		$data = $this->EE->db->get();
 		$users = $data->result_array();
 		
+		foreach($users AS $key => $value)
+		{
+			if(isset($value['join_date']))
+			{
+				$users[$key]['join_date'] = m62_convert_timestamp($value['join_date']);
+			}
+			
+			if(isset($value['last_visit']))
+			{
+				$users[$key]['last_visit'] = m62_convert_timestamp($value['last_visit']);
+			}			
+		}
+
 		if($include_custom_fields)
 		{
 			$users = $this->_parse_custom_fields($users);

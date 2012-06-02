@@ -166,12 +166,13 @@ class Export_it_mcp
 	public function channel_options_ajax_filter()
 	{
 		$channel_id = ($this->EE->input->get_post('channel_id')) ? $this->EE->input->get_post('channel_id') : FALSE;
+		$type = ($this->EE->input->get_post('option_type')) ? $this->EE->input->get_post('option_type') : FALSE;
 		if(!$channel_id)
 		{
 			return $this->EE->javascript->generate_json(array('' => 'All'), TRUE);
 		}
 		
-		die($this->EE->json_ordering->channel_options($channel_id));
+		die($this->EE->json_ordering->channel_options($channel_id, $type));
 	}
 	
 	public function comments()
@@ -224,6 +225,11 @@ class Export_it_mcp
 	{		
 		
 		$total = $this->EE->mailinglist_data->get_total_emails();
+		if(isset($total->count))
+		{
+			$total = $total->count;
+		}
+
 		$vars['emails'] = $this->EE->mailinglist_data->get_list_emails(FALSE, $this->settings['mailing_list_limit']);
 		
 		$this->EE->cp->add_js_script(array('plugin' => 'dataTables'));
@@ -347,10 +353,12 @@ class Export_it_mcp
 			case 'channel_entries':
 	
 				$keywords = ($this->EE->input->get_post('keywords')) ? $this->EE->input->get_post('keywords') : FALSE;
+				$complete = ($this->EE->input->get_post('complete_select')) ? $this->EE->input->get_post('complete_select') : FALSE;
 				$channel_id = ($this->EE->input->get_post('channel_id') && $this->EE->input->get_post('channel_id') != '') ? $this->EE->input->get_post('channel_id') : FALSE;
 				$status = ($this->EE->input->get_post('status') && $this->EE->input->get_post('status') != '') ? $this->EE->input->get_post('status') : FALSE;
 				$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
-	
+				$category = ($this->EE->input->get_post('category') && $this->EE->input->get_post('category') != '') ? $this->EE->input->get_post('category') : FALSE;
+				
 				$where = array();
 				if($channel_id)
 				{
@@ -366,16 +374,34 @@ class Export_it_mcp
 				{
 					$where['status'] = $status;
 				}
+				
+				if($category)
+				{
+					$cat_where = array('cat_id' => $category);
+					$entry_ids = $this->EE->channel_data->get_category_posts($cat_where);
+					$ids = array();
+					foreach($entry_ids AS $entry_id)
+					{
+						$ids[] = $entry_id['entry_id'];
+					}
+						
+					$where['ct.entry_id'] = $ids;
+				}				
 	
 				if($date_range)
 				{
 					$where['date_range'] = $date_range;
 				}
 				
+				if($complete && $complete != '')
+				{
+					$this->EE->channel_data->complete_select = TRUE;
+				}
+				
 				$data = $this->EE->channel_data->get_entries($where);
 				$this->EE->export_data->export_channel_entries($data, $export_format);
 	
-				break;
+			break;
 					
 			case 'members':
 			default:

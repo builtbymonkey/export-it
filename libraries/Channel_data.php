@@ -57,6 +57,12 @@ class Channel_data
 	 */
 	public $translate_cft = TRUE;
 	
+	/**
+	 * Flag to include all fields from channel_titles
+	 * @var bool
+	 */
+	public $complete_select = FALSE;	
+	
 	public function __construct()
 	{
 		$this->EE =& get_instance();
@@ -101,7 +107,14 @@ class Channel_data
 			$this->channel_field_ids = $this->get_channel_field_ids();
 		}
 		
-		$this->EE->db->select("ct.*, cd.*, c.*");
+		if($this->complete_select)
+		{
+			$this->EE->db->select("ct.*, cd.*, c.*");
+		}
+		else
+		{
+			$this->EE->db->select("ct.title, ct.url_title, ct.status, ct.entry_date, cd.*, c.channel_id, c.channel_title");
+		}
 		$this->EE->db->from('channel_titles ct');
 		$this->EE->db->join('channel_data cd', 'ct.entry_id = cd.entry_id');
 		$this->EE->db->join('channels c', 'ct.channel_id = c.channel_id');
@@ -244,7 +257,14 @@ class Channel_data
 		{
 			foreach($where AS $key => $value)
 			{
-				$this->EE->db->where($key, $value);
+				if(!is_array($value))
+				{
+					$this->EE->db->where($key, $value);
+				}
+				else
+				{
+					$this->EE->db->where_in($key, $value);
+				}
 			}
 		}
 		elseif(is_string($where))
@@ -254,7 +274,7 @@ class Channel_data
 	}	
 	
 	/**
-	 * Returns an array of the statuses for the order channel
+	 * Returns an array of the statuses for the channel
 	 * @return array
 	 */
 	public function get_channel_statuses($channel_id = FALSE)
@@ -273,6 +293,40 @@ class Channel_data
 		}
 	}
 
+	/**
+	 * Returns an array of the categories for the channel
+	 * @return array
+	 */
+	public function get_channel_categories($channel_id = FALSE)
+	{
+		$channel_info = $this->EE->channel_model->get_channel_info($channel_id);
+		$status_group = FALSE;
+		foreach($channel_info->result_array() AS $row)
+		{
+			$cat_groups = explode('|',$row['cat_group']);
+			break;
+		}
+
+		if($cat_groups)
+		{
+			$return = array();
+			foreach($cat_groups AS $cat_group)
+			{
+				$data = $this->EE->channel_model->get_channel_categories($cat_group)->result_array();
+				foreach($data AS $cat)
+				{
+					$return[] = $cat;
+				}
+			}
+
+			return $return; 
+		}
+	}
+
+	/**
+	 * Grabs the channel field ids
+	 * @return multitype:unknown
+	 */
 	public function get_channel_field_ids()
 	{
 		$this->EE->db->select("field_id");
@@ -307,6 +361,11 @@ class Channel_data
 				$this->channel_fields[$entry['channel_id']]  = $this->EE->channel_model->get_channel_fields($channel_data->field_group)->result_array();								
 			}
 
+			if(isset($entry['entry_date']))
+			{
+				$data[$key]['entry_date'] = m62_convert_timestamp($data[$key]['entry_date']);
+			}
+			
 			$channel_fields = $this->channel_fields[$entry['channel_id']];
 			$data[$key]['channel_name'] = $channel_data->channel_name;
 			if(isset($entry['author_id']))
@@ -336,6 +395,7 @@ class Channel_data
 				}
 			}
 		}
+
 		return $data;
 	}
 	
@@ -354,9 +414,14 @@ class Channel_data
 				$data[$field['field_name']] = $this->clean_image_data($entry['field_id_'.$field['field_id']]);	
 			break;
 			
+			case 'date':
+				$data[$field['field_name']] = m62_convert_timestamp($entry['field_id_'.$field['field_id']]);
+			break;			
+			
 			case 'assets':
 				$data[$field['field_name']] = $this->clean_assets_data($entry['field_id_'.$field['field_id']]);
 			break;
+			
 			case 'playa':
 				$data[$field['field_name']] = $this->clean_playa_data($entry['field_id_'.$field['field_id']]);	
 			break;
@@ -392,6 +457,10 @@ class Channel_data
 			case 'cartthrob_price_modifiers':
 				$data[$field['field_name']] = $this->clean_cartthrob_price_modifiers_data($entry['field_id_'.$field['field_id']]);
 			break;
+			
+			case 'cartthrob_discount':
+				$data[$field['field_name']] = $this->clean_cartthrob_discount_data($entry['field_id_'.$field['field_id']]);
+			break;
 		}
 
 		return $data[$field['field_name']];
@@ -423,6 +492,22 @@ class Channel_data
 				}
 			}
 			return $return;
+		}
+	}
+	
+	public function clean_cartthrob_discount_data($data)
+	{
+		if($data)
+		{
+			$data = base64_decode($data);
+			if(strlen($data) >= 3)
+			{
+				$data = @unserialize($data);
+				if(is_array($data))
+				{
+					return $data;
+				}
+			}
 		}
 	}
 	
@@ -488,6 +573,11 @@ class Channel_data
 					if($key == 'member_id')
 					{
 						$return[$i]['channel_file']['member_info'] = $this->EE->member_data->get_member($value);
+					}
+					
+					if($key == 'date')
+					{
+						$return[$i]['channel_file']['date'] = m62_convert_timestamp($value);
 					}
 				}
 				$i++;
@@ -875,6 +965,13 @@ class Channel_data
 		return $entry_id;
 	}
 	
+	/**
+	 * Wrapper to upate an entry
+	 * @param int $entry_id
+	 * @param array $data
+	 * @param bool $translate
+	 * @return mixed
+	 */
 	public function edit_entry($entry_id, $data, $translate = FALSE)
 	{
 		//translate 
@@ -917,10 +1014,8 @@ class Channel_data
 		
 		$this->EE->api_channel_entries->_cache['dst_enabled'] = 'n';
 		$this->EE->api_channel_entries->_cache['rel_updates'] = '2'; //hack to force relationships to update
-		
 		$this->EE->api_channel_entries->_update_entry($meta, $data, $mod_data);;
 		
-
 		return $entry_id;
 	}
 
@@ -959,6 +1054,13 @@ class Channel_data
 		}		
 	}
 	
+	/**
+	 * Verifies if a relationship exists
+	 * @param int $parent_id
+	 * @param int $child_id
+	 * @param string $type
+	 * @return boolean
+	 */
 	public function check_relationship($parent_id, $child_id, $type = 'channel')
 	{
 		$rel = $this->EE->db->get_where('relationships', array('rel_parent_id' => $parent_id, 'rel_child_id' => $child_id));
@@ -969,6 +1071,11 @@ class Channel_data
 		return $rel->result_array();
 	}
 	
+	/**
+	 * Adds relationship data to an entry
+	 * @param int $parent_id
+	 * @param int $child_id
+	 */
 	public function add_relationship($parent_id, $child_id)
 	{
 		$data = array(
@@ -981,6 +1088,12 @@ class Channel_data
 		return $this->EE->db->insert_id();		
 	}
 	
+	/**
+	 * Wrapper to tranlate custom field data
+	 * @param array $data
+	 * @param int $channel_id
+	 * @return Ambigous <multitype:, unknown>
+	 */
 	private function _translate_to_custom_field(array $data, $channel_id)
 	{
 		$channel_data = $this->EE->channel_model->get_channel_info($channel_id)->row();
