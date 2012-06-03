@@ -226,7 +226,12 @@ class Export_it_js
 			var date_range = $("#date_range").val();
 			var group_id = $("#group_id").val();
 			var include_custom_fields = $("#include_custom_fields").val();
-			var complete_select = $("#complete_select").val();
+			var complete_select = "0";
+			if($("#complete_select").is(":checked"))
+			{
+				complete_select = "1";
+			}
+												
 			var member_keywords = $("#member_keywords").val();
 			var format = $("#export_format").val();
 			var dataString = "complete_select="+ complete_select + "&include_custom_fields="+include_custom_fields+ "&format=" +format+ "&date_range="+ date_range + "&group_id=" + group_id + "&member_keywords=" + member_keywords;
@@ -1005,14 +1010,12 @@ class Export_it_js
 			var format = $("#export_format").val();
 			var status = $("#status").val();
 			var category = $("#category").val();
+			var complete_select = "0";
 			if($("#complete_select").is(":checked"))
 			{
 				complete_select = "1";
 			}
-			else
-			{
-				complete_select = "0";
-			}
+			
 			var dataString = "status="+status+"&category=" + category + "&complete_select=" + complete_select + "&format=" +format+ "&date_range="+ date_range + "&channel_id=" + channel_id + "&keywords=" + keywords;
 			if(channel_id == "0")
 			{

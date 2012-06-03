@@ -40,9 +40,7 @@ class Export_it_settings_model extends CI_Model
 						'mailing_list_limit' => '20',
 						'comments_list_limit' => '20',
 						'channel_entries_list_limit' => '20',
-						'api_key' => '',
-						'export_it_date_format' => '%M %d, %Y, %h:%i:%s%A',
-						'api_key' => ''
+						'export_it_date_format' => '%M %d, %Y, %h:%i:%s%A'
 	);
 	
 	/**
