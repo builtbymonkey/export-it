@@ -11,10 +11,13 @@ $lang = array(
 // Additional Key => Value pairs go here
 'main' => 'Main',
 'license_number' => 'License Number',
+'missing_license_number' => 'Please enter your license number. <a href="#config_url#">Enter License</a> or Buy A License on <a href="http://devot-ee.com/add-ons/export-it/">Devot:ee</a> or <a href="http://cartthrob.com/cart/products#third_party_export_it">CartThrob.com</a>',
 'channel_entries' => 'Channel Entries',
 'comments' => 'Comments',
 'mailing_list' => 'Mailing List',
 'export' => 'Export',
+'configure_api' => 'Configure API',
+'configure_cp_export' => 'Configure CP Export',
 'member_group' => 'Member Group',
 'export_format' => 'Export Format',
 'include_custom_fields' => 'Include Custom Fields',
@@ -58,5 +61,19 @@ $lang = array(
 'end_date' => 'End Date',
 'no_matching_channel_entries' => 'No Channel Entries Found',
 'channel_title' => 'Channel Title',
+		
+'members_list_limit' => 'Members List Limit',
+'members_list_limit_instructions' => 'How many items do you want to list per page on the Member Export List page?',
+'channel_entries_list_limit' => 'Channel Entries List Limit',
+'channel_entries_list_limit_instructions' => 'How many items do you want to list per page on the Channel Entries Export List page?',
+'comments_list_limit' => 'Comments List Limit',
+'comments_list_limit_instructions' => 'How many items do you want to list per page on the Comment Export List page?',
+'mailing_list_limit' => 'Mailinglist Limit',
+'mailing_list_limit_instructions' => 'How many items do you want to list per page on the Mailinglist Export List page?',
+'export_it_date_format' => 'Date Format',
+'export_it_date_format_instructions' => 'The date format you want Export It to use when exporting data. Note that the format should conform to the <a href="http://expressionengine.com/user_guide/templates/date_variable_formatting.html#date-formatting-codes" target="_blank">ExpressionEngine date format</a>.',
+'members_list_limit' => 'Members List Limit',
+		
+'global_config' => 'Global Configuration',
 ''=>''
 );

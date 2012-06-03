@@ -40,6 +40,7 @@ class Export_it_settings_model extends CI_Model
 						'mailing_list_limit' => '20',
 						'comments_list_limit' => '20',
 						'channel_entries_list_limit' => '20',
+						'disable_accordions' => FALSE,
 						'export_it_date_format' => '%M %d, %Y, %h:%i:%s%A'
 	);
 	
@@ -49,6 +50,13 @@ class Export_it_settings_model extends CI_Model
 	 */		
 	private $_serialized = array(
 						'replace_me'
+	);
+	
+	private $_val_numeric = array(
+						'members_list_limit',
+						'mailing_list_limit',
+						'comments_list_limit',
+						'channel_entries_list_limit'
 	);
 	
 	/**
@@ -135,6 +143,14 @@ class Export_it_settings_model extends CI_Model
 
 		foreach($data AS $key => $value)
 		{
+			
+			if(in_array($key, $this->_val_numeric))
+			{
+				if(!is_numeric($value) || $value <= '0')	
+				{
+					$value = $this->_defaults[$key];
+				}
+			}
 			
 			if(in_array($key, $this->_serialized))
 			{
