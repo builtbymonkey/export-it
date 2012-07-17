@@ -59,7 +59,7 @@ class Comment_data
 	 */
 	public function get_comments($where = FALSE, $limit = FALSE, $page = '0', $order = 'comment_date DESC')
 	{
-		$this->EE->db->select('comments.*, channel_titles.title, channels.channel_title, channels.channel_name ');
+		$this->EE->db->select('comments.*, channel_titles.title, channel_titles.entry_date, channel_titles.url_title, channels.channel_title, channels.channel_name ');
 		$this->EE->db->from('comments');
 		$this->EE->db->join('channel_titles', 'channel_titles.entry_id = comments.entry_id');
 		$this->EE->db->join('channels', 'comments.channel_id = channels.channel_id', FALSE);	

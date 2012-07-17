@@ -347,7 +347,40 @@ class Export_it_mcp
 				}
 	
 				$data = $this->EE->comment_data->get_comments($where);
-				$this->EE->export_data->export_comments($data, $format);
+				
+				//now we need to group everything up all nice and tight
+				$comments = array();
+				$channel_data = array();
+				foreach($data AS $comment)
+				{
+					if(!isset($channel_data[$comment['channel_id']]))
+					{
+						$channel_data[$comment['channel_id']] = $this->EE->channel_model->get_channel_info($comment['channel_id'])->row();
+					}
+					
+					$comments[$comment['entry_id']]['title'] = $comment['title'];
+					$comments[$comment['entry_id']]['entry_title'] = $comment['title'];
+					$comments[$comment['entry_id']]['entry_date'] = $comment['entry_date'];
+					$comments[$comment['entry_id']]['comment_url'] = $channel_data[$comment['channel_id']]->comment_url;
+					$comments[$comment['entry_id']]['channel_url'] = $channel_data[$comment['channel_id']]->channel_url;
+					$comments[$comment['entry_id']]['url_title'] = $comment['url_title'];
+					$comments[$comment['entry_id']]['entry_url_title'] = $comment['url_title'];
+					$comments[$comment['entry_id']]['channel_id'] = $comment['channel_id'];
+					$comments[$comment['entry_id']]['channel_title'] = $comment['channel_title'];
+					$comments[$comment['entry_id']]['channel_name'] = $comment['channel_name'];
+					$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['comment_id'] = $comment['comment_id'];
+					$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['name'] = $comment['name'];
+					$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['email'] = $comment['email'];
+					$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['status'] = $comment['status'];
+					$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['url'] = $comment['url'];
+					$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['location'] = $comment['location'];
+					$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['ip_address'] = $comment['ip_address'];
+					$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['comment_date'] = $comment['comment_date'];
+					$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['edit_date'] = $comment['edit_date'];
+					$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['comment'] = $comment['comment'];
+				}
+			
+				$this->EE->export_data->export_comments($comments, $format);
 				break;
 					
 			case 'channel_entries':
