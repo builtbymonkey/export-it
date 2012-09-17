@@ -23,6 +23,7 @@
 class Export_data
 {
 	public $disable_download = FALSE;
+	
 	public function __construct()
 	{
 		$this->EE =& get_instance();
@@ -34,21 +35,21 @@ class Export_data
 		$this->EE->load->helper('utilities');
 	}
 	
-	public function export_channel_entries($data, $export_format)
+	public function export_channel_entries($data, $export_format, $filename = 'channel_entry_export')
 	{
 		switch($export_format)
 		{	
 			case 'xml':
 			default:
-				$this->download_xml($data, 'channel_entry_export.xml', 'channel_entries', 'entry');
+				$this->download_xml($data, $filename.'.xml', 'channel_entries', 'entry');
 			break;
 			
 			case 'json':
-				$this->download_json($data, 'channel_entry_export.json');
+				$this->download_json($data, $filename.'.json');
 			break;
 			
 			case 'xls':
-				$this->download_array($data, TRUE, 'channel_entry_export.xls');
+				$this->download_array($data, TRUE, $filename.'.xls');
 			break;			
 		}		
 	}

@@ -638,9 +638,14 @@ class Channel_data
 			{
 				if($match != '')
 				{
-					$return[]['relationship'] = $match;
+					$title_part = preg_replace("/\[(.*?)\]/", '', $data);
+					$parts = explode('-', $title_part, 2);
+					$title = (isset($parts['0']) && $parts['0'] != '' ? $parts['0'] : 'N/A');
+					$url_title = (isset($parts['1']) && $parts['1'] != '' ? $parts['1'] : 'N/A');
+					$return[]['relationship'] = array('entry_id' => $match, 'title' => $title, 'url_title' => $url_title);
 				}
 			}
+			
 			return $return;
 		}
 		
@@ -651,11 +656,15 @@ class Channel_data
 		return $this->EE->encrypt->decode(htmlspecialchars_decode($data));
 	}
 
-	public function clean_matrix_data($entry_id, $field_id)
+	public function clean_matrix_data($entry_id = FALSE, $field_id = '')
 	{
 		$this->EE->db->select("md.*");
 		$this->EE->db->from('matrix_data md');
-		$this->EE->db->where('md.entry_id', $entry_id);
+		if($entry_id)
+		{
+			$this->EE->db->where('md.entry_id', $entry_id);
+		}
+		
 		$this->EE->db->where('md.field_id', $field_id);
 		$data = $this->EE->db->get();
 		if($data->num_rows == '0')
