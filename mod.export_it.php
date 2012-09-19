@@ -82,8 +82,6 @@ class Export_it {
 		}
 		
 		$data = $this->clean_export_data($this->EE->member_data->get_members($where, $include_custom_fields, $complete_select, FALSE, 0, FALSE));
-		
-		//error_reporting(0);
 		$this->EE->export_data->export_members($data, $this->export_format);
 		exit;		
 	}
@@ -101,6 +99,10 @@ class Export_it {
 		if($channel_id)
 		{
 			$where['ct.channel_id'] = $channel_id;
+		}
+		else 
+		{
+			return 'channel_id is REQUIRED :(';
 		}
 		
 		if($keywords)

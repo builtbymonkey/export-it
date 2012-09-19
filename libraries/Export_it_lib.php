@@ -100,7 +100,7 @@ class Export_it_lib
 			break;
 			
 			case 'comments':
-				return array('xls' => 'Excel', 'disqus' => 'Disqus', 'xml' => 'XML', 'json' => 'JSON');
+				return array('disqus' => 'Disqus', 'xml' => 'XML', 'json' => 'JSON');
 			break;	
 
 			case 'channel_entries':

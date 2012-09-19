@@ -128,6 +128,44 @@ class Export_data
 		{
 			$data = $this->sanitize_member($data);
 		}
+		
+		foreach($data AS $key => $value)
+		{
+			if(isset($value['join_date']))
+			{
+				$data[$key]['join_date'] = ($value['join_date'] != '0' ? m62_convert_timestamp($value['join_date']) : '0');
+			}
+		
+			if(isset($value['last_entry_date']))
+			{
+				$data[$key]['last_entry_date'] = ($value['last_entry_date'] != '0' ? m62_convert_timestamp($value['last_entry_date']) : '0');
+			}
+				
+			if(isset($value['last_comment_date']))
+			{
+				$data[$key]['last_comment_date'] = ($value['last_comment_date'] != '0' ? m62_convert_timestamp($value['last_comment_date']) : '0');
+			}
+				
+			if(isset($value['last_activity']))
+			{
+				$data[$key]['last_activity'] = ($value['last_activity'] != '0' ? m62_convert_timestamp($value['last_activity']) : '0');
+			}
+		
+			if(isset($value['last_visit']))
+			{
+				$data[$key]['last_visit'] = ($value['last_visit'] != '0' ? m62_convert_timestamp($value['last_visit']) : '0');
+			}
+			
+			if(isset($value['last_forum_post_date']))
+			{
+				$data[$key]['last_forum_post_date'] = ($value['last_forum_post_date'] != '0' ? m62_convert_timestamp($value['last_forum_post_date']) : '0');
+			}
+			
+			if(isset($value['last_email_date']))
+			{
+				$data[$key]['last_email_date'] = ($value['last_email_date'] != '0' ? m62_convert_timestamp($value['last_email_date']) : '0');
+			}			
+		}		
 				
 		switch($format)
 		{
