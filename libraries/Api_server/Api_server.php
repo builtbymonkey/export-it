@@ -148,7 +148,8 @@ class Api_server
 		$channel_id = ($this->EE->input->get_post('channel_id') && $this->EE->input->get_post('channel_id') != '') ? $this->EE->input->get_post('channel_id') : FALSE;
 		$status = ($this->EE->input->get_post('status') && $this->EE->input->get_post('status') != '') ? $this->EE->input->get_post('status') : FALSE;
 		$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
-	
+		$author_id = ($this->EE->input->get_post('author_id') && $this->EE->input->get_post('author_id') != '') ? $this->EE->input->get_post('author_id') : FALSE;
+		
 		$perpage = ($this->EE->input->get_post('perpage')) ? $this->EE->input->get_post('perpage') : $this->settings['channel_entries_list_limit'];
 		$offset = ($this->EE->input->get_post('offset')) ? $this->EE->input->get_post('offset') : 0; // Display start point
 		$order = ($this->EE->input->get_post('order')) ? $this->EE->input->get_post('order') : 'entry_date DESC'; // Display start point
@@ -157,6 +158,11 @@ class Api_server
 		if($channel_id)
 		{
 			$where['ct.channel_id'] = $channel_id;
+		}
+		
+		if($author_id)
+		{
+			$where['ct.author_id'] = $author_id;
 		}
 		
 		if($keywords)
