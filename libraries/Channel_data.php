@@ -72,6 +72,7 @@ class Channel_data
 		$this->EE->api->instantiate('channel_fields');
 		$this->EE->load->helper('custom_field');
 		$this->EE->load->library('member_data');
+		$this->EE->load->model('category_model');
 	}
 	
 	/**
@@ -113,11 +114,14 @@ class Channel_data
 		}
 		else
 		{
-			$this->EE->db->select("ct.title, ct.url_title, ct.status, ct.entry_date, cd.*, c.channel_id, c.channel_title");
+			$this->EE->db->select("ct.title, ct.url_title, ct.status, ct.entry_date, cd.*, c.channel_id, c.channel_title, ct.author_id");
 		}
+		
+		$this->EE->db->select("m.username, m.member_id, m.screen_name, m.email, m.join_date, m.last_visit, m.group_id, m.member_id, m.in_authorlist");
 		$this->EE->db->from('channel_titles ct');
 		$this->EE->db->join('channel_data cd', 'ct.entry_id = cd.entry_id');
 		$this->EE->db->join('channels c', 'ct.channel_id = c.channel_id');
+		$this->EE->db->join('members m', 'ct.author_id = m.member_id');
 
 		if($where)
 		{
@@ -147,9 +151,12 @@ class Channel_data
 	public function get_entry(array $where)
 	{
 		$this->EE->db->select("ct.*, cd.*");
+		$this->EE->db->select("m.username, m.member_id, m.screen_name, m.email, m.join_date, m.last_visit, m.group_id, m.member_id, m.in_authorlist");
+		
 		
 		$this->EE->db->from('channel_titles ct');
 		$this->EE->db->join('channel_data cd', 'ct.entry_id = cd.entry_id');
+		$this->EE->db->join('members m', 'ct.author_id = m.member_id');
 				
 		if(isset($where['entry_id']))
 		{
@@ -312,7 +319,7 @@ class Channel_data
 			$return = array();
 			foreach($cat_groups AS $cat_group)
 			{
-				$data = $this->EE->channel_model->get_channel_categories($cat_group)->result_array();
+				$data = $this->EE->category_model->get_channel_categories($cat_group)->result_array();
 				foreach($data AS $cat)
 				{
 					$return[] = $cat;
@@ -370,7 +377,22 @@ class Channel_data
 			$data[$key]['channel_name'] = $channel_data->channel_name;
 			if(isset($entry['author_id']))
 			{
-				$data[$key]['author_data'] = $this->EE->member_data->get_member($entry['author_id']);
+				$data[$key]['author_data'] = array(
+						'username' => $entry['username'],
+						'member_id' => $entry['member_id'],
+						'screen_name' => $entry['screen_name'],
+						'email' => $entry['email'],
+						'join_date' => $entry['join_date'],
+						'last_visit' => $entry['last_visit'],
+						'group_id' => $entry['group_id'],
+						'in_authorlist' => $entry['in_authorlist']
+				);
+				unset($data[$key]['in_authorlist']);
+				unset($data[$key]['username']);
+				unset($data[$key]['screen_name']);
+				unset($data[$key]['email']);
+				unset($data[$key]['join_date']);
+				unset($data[$key]['group_id']);
 			}			
 			
 			foreach($channel_fields AS $field)
@@ -461,6 +483,10 @@ class Channel_data
 			case 'cartthrob_discount':
 				$data[$field['field_name']] = $this->clean_cartthrob_discount_data($entry['field_id_'.$field['field_id']]);
 			break;
+
+			case 'cartthrob_order_items':
+				$data[$field['field_name']] = $this->clean_cartthrob_order_items($entry['entry_id'], $entry['field_id_'.$field['field_id']]);
+			break;
 		}
 
 		return $data[$field['field_name']];
@@ -509,6 +535,35 @@ class Channel_data
 				}
 			}
 		}
+	}
+
+	public function clean_cartthrob_order_items($entry_id, $data)
+	{
+		$this->EE->db->select("*");
+		$this->EE->db->from('cartthrob_order_items coi');
+		$this->EE->db->where('coi.order_id', $entry_id);
+		$data = $this->EE->db->get();
+		$arr = $data->result_array();
+		$total = count($arr);
+		if($total == '0')
+		{
+			return;
+		}
+
+		$ignore = array('row_id', 'row_order', 'order_id', 'entry_id');
+		$return = array();
+		foreach($arr AS $key => $value)
+		{
+			foreach($value AS $k => $v)
+			{
+				if(!in_array($k, $ignore))
+				{
+					$return[$key]['product_'.$k] = $v;
+				}
+			}
+		}
+
+		return $return;
 	}
 	
 	public function clean_tagger_data($data)

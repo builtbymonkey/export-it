@@ -62,6 +62,17 @@ class Export_it_upd
 	
 	public function activate_extension()
 	{
+		$data = array(
+				'class'     => $this->ext_class_name,
+				'method'    => 'cp_menu_array',
+				'hook'      => 'cp_menu_array',
+				'settings'  => serialize(array()),
+				'priority'  => 9789,
+				'version'   => $this->version,
+				'enabled'   => 'y'
+		);
+		
+		$this->EE->db->insert('extensions', $data);		
 		return TRUE;
 	}
 
@@ -90,7 +101,7 @@ class Export_it_upd
 	
 	public function disable_extension()
 	{
-		$this->EE->db->where('class', 'Export_it_ext');
+		$this->EE->db->where('class', $this->ext_class_name);
 		$this->EE->db->delete('extensions');
 	}
 
@@ -102,9 +113,24 @@ class Export_it_upd
 			return FALSE;
 		}	
 
-		if ($current < 1.1)
+		if (version_compare($current, '1.1', '<'))
 		{
 			$this->add_settings_table();		
+		}
+		
+		if(version_compare($current, '1.2.1', '<'))
+		{
+			$data = array(
+					'class'     => $this->ext_class_name,
+					'method'    => 'cp_menu_array',
+					'hook'      => 'cp_menu_array',
+					'settings'  => serialize(array()),
+					'priority'  => 9789,
+					'version'   => $this->version,
+					'enabled'   => 'y'
+			);
+			
+			$this->EE->db->insert('extensions', $data);			
 		}
 		
 	}	

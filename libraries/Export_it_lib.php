@@ -37,6 +37,7 @@ class Export_it_lib
 	public function __construct()
 	{
 		$this->EE =& get_instance();
+		$this->EE->load->model('export_it_settings_model', 'export_it_settings');
 		$this->settings = $this->get_settings();
 	}
 	

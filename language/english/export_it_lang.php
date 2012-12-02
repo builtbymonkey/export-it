@@ -75,5 +75,12 @@ $lang = array(
 'members_list_limit' => 'Members List Limit',
 		
 'global_config' => 'Global Configuration',
+'nav_export_members' => 'Export',
+'nav_export_entries' => 'Export',
+'nav_export' => 'Export',
+'nav_mailing_list' => 'Mailing List',
+'nav_comments' => 'Comments',
+'nav_channel_entries' => 'Channel Entries',
+'nav_settings' => 'Settings',
 ''=>''
 );

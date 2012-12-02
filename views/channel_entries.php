@@ -2,10 +2,6 @@
 $this->load->view('errors'); 
 ?>
 <div class="clear_left shun"></div>
-<?php 
-if(count($entries) > 0)
-{
-?>
 	<div style="clear:left"></div>
 	
     <?=form_open($query_base.'edit_orders_ajax_filter', array('id' => 'order_form'))?>
@@ -15,7 +11,7 @@ if(count($entries) > 0)
 
 
 			<div class="group">
-				<?=form_dropdown('channel_id', $channel_options, FALSE, 'id="channel_id"')?> 
+				<?=form_dropdown('channel_id', $channel_options, $channel_id, 'id="channel_id"')?> 
 				<?=form_dropdown('date_range', $date_select_options, $date_selected, 'id="date_range"').NBS.NBS?>	
 				<?=form_dropdown('status', array('' => 'All'), FALSE, 'id="status"')?>
 				<?=form_dropdown('category', array('' => 'All'), FALSE, 'id="category"')?> 	 				
@@ -65,16 +61,24 @@ if(count($entries) > 0)
 		lang('status')
 	);
 
-	foreach($entries as $entry)
-	{		
-		$this->table->add_row(
-								'<a href="?D=cp&C=addons_modules&M=show_module_cp&module=comment&method=edit_comment_form&comment_id='.$entry['entry_id'].'">'.$entry['entry_id'].'</a>',
-								'<a href="javascript:;" rel="'.$entry['title'].'" class="keyword_filter_value">'.$entry['title'].'</a>',
-								'<a href="javascript:;" rel="'.$entry['channel_id'].'" class="channel_filter_id">'.$entry['channel_title'].'</a>',
-								m62_convert_timestamp($entry['entry_date']),
-								'<a href="javascript:;" rel="'.$entry['status'].'" class="status_filter_id">'.$entry['status'].'</a>'
-								//'<span style="color:#'.m62_status_color($entry['status'], $order_channel_statuses).'">'.lang($entry['status']).'</span>'
-		);
+	if(count($entries) >= '1')
+	{
+		foreach($entries as $entry)
+		{		
+			$this->table->add_row(
+									'<a href="?D=cp&C=addons_modules&M=show_module_cp&module=comment&method=edit_comment_form&comment_id='.$entry['entry_id'].'">'.$entry['entry_id'].'</a>',
+									'<a href="javascript:;" rel="'.$entry['title'].'" class="keyword_filter_value">'.$entry['title'].'</a>',
+									'<a href="javascript:;" rel="'.$entry['channel_id'].'" class="channel_filter_id">'.$entry['channel_title'].'</a>',
+									m62_convert_timestamp($entry['entry_date']),
+									'<a href="javascript:;" rel="'.$entry['status'].'" class="status_filter_id">'.$entry['status'].'</a>'
+									//'<span style="color:#'.m62_status_color($entry['status'], $order_channel_statuses).'">'.lang($entry['status']).'</span>'
+			);
+		}
+	}
+	else
+	{
+		$cell = array('data' => lang('no_matching_channel_entries'), 'colspan' => 5);
+		$this->table->add_row($cell);
 	}
 	
 	echo $this->table->generate();
@@ -87,7 +91,3 @@ if(count($entries) > 0)
 </div>	
 
 <?php echo form_close()?>
-
-<?php } else { ?>
-<?php echo lang('no_matching_members')?>
-<?php } ?>

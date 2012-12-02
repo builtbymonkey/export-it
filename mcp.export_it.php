@@ -121,10 +121,17 @@ class Export_it_mcp
 	
 	public function channel_entries()
 	{	
+		$channel_id = ($this->EE->input->get_post('channel_id')) ? $this->EE->input->get_post('channel_id') : FALSE;		
 		$this->EE->channel_data->translate_cft = FALSE; //disable checking custom field data
 		$total = $this->EE->channel_data->get_total_entries();
-		$vars['entries'] = $this->EE->channel_data->get_entries(FALSE, $this->settings['channel_entries_list_limit']);
 		
+		$where = FALSE;
+		if($channel_id)
+		{
+			$where = array('ct.channel_id' => $channel_id);
+		}
+		$vars['entries'] = $this->EE->channel_data->get_entries($where, $this->settings['channel_entries_list_limit']);
+		$vars['channel_id'] = $channel_id;
 		$this->EE->cp->add_js_script(array('plugin' => 'dataTables','ui' => 'datepicker'));
 		$dt = $this->EE->export_it_js->get_channel_entries_datatables('export_channel_entries_ajax_filter', 3, 1, $this->settings['channel_entries_list_limit'],'"aaSorting": [[ 3, "desc" ]],');
 		$this->EE->javascript->output($dt);		
