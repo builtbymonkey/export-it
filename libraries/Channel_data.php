@@ -375,7 +375,7 @@ class Channel_data
 			
 			$channel_fields = $this->channel_fields[$entry['channel_id']];
 			$data[$key]['channel_name'] = $channel_data->channel_name;
-			if(isset($entry['author_id']))
+			if(isset($entry['author_id']) && isset($entry['username']))
 			{
 				$data[$key]['author_data'] = array(
 						'username' => $entry['username'],
