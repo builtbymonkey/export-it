@@ -137,7 +137,11 @@ class Export_it_mcp
 				$vars['status_options'][$item['status']] = $item['status'];
 			}
 			
-			$vars['category_options'] = $this->EE->channel_data->get_channel_categories($channel_id);
+			$options = $this->EE->channel_data->get_channel_categories($channel_id);
+			foreach($options AS $item)
+			{
+				$vars['category_options'][$item['cat_id']] = $item['cat_name'];
+			}			
 		}
 		
 		$vars['entries'] = $this->EE->channel_data->get_entries($where, $this->settings['channel_entries_list_limit']);

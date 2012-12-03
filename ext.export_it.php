@@ -117,6 +117,7 @@ class Export_it_ext
 			$new_menu['export']['mailing_list'] = $this->url_base.'mailing_list';
 		}
 
+		$new_menu['export']['0'] = '----';
 		$new_menu['export']['settings'] = $this->url_base.'settings';
 		$new_menu['tools_logs'] = $menu['tools']['tools_logs']; unset($menu['tools']['tools_logs']);
 		$new_menu['1'] = $menu['tools']['1']; unset($menu['tools']['1']);
