@@ -13,8 +13,8 @@ $this->load->view('errors');
 			<div class="group">
 				<?=form_dropdown('channel_id', $channel_options, $channel_id, 'id="channel_id"')?> 
 				<?=form_dropdown('date_range', $date_select_options, $date_selected, 'id="date_range"').NBS.NBS?>	
-				<?=form_dropdown('status', array('' => 'All'), FALSE, 'id="status"')?>
-				<?=form_dropdown('category', array('' => 'All'), FALSE, 'id="category"')?> 	 				
+				<?=form_dropdown('status', $status_options, FALSE, 'id="status"')?>
+				<?=form_dropdown('category', $category_options, FALSE, 'id="category"')?> 	 				
 				<?=form_dropdown('export_format', $export_format, FALSE, 'id="export_format"')?>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
 				

@@ -121,15 +121,25 @@ class Export_it_mcp
 	
 	public function channel_entries()
 	{	
-		$channel_id = ($this->EE->input->get_post('channel_id')) ? $this->EE->input->get_post('channel_id') : FALSE;		
+		$channel_id = $this->EE->input->get_post('channel_id');		
 		$this->EE->channel_data->translate_cft = FALSE; //disable checking custom field data
 		$total = $this->EE->channel_data->get_total_entries();
 		
+		$vars = array();
 		$where = FALSE;
+		$vars['status_options'] = $vars['category_options'] = array('' => 'All');
 		if($channel_id)
 		{
 			$where = array('ct.channel_id' => $channel_id);
+			$options = $this->EE->channel_data->get_channel_statuses($channel_id);
+			foreach($options AS $item)
+			{
+				$vars['status_options'][$item['status']] = $item['status'];
+			}
+			
+			$vars['category_options'] = $this->EE->channel_data->get_channel_categories($channel_id);
 		}
+		
 		$vars['entries'] = $this->EE->channel_data->get_entries($where, $this->settings['channel_entries_list_limit']);
 		$vars['channel_id'] = $channel_id;
 		$this->EE->cp->add_js_script(array('plugin' => 'dataTables','ui' => 'datepicker'));

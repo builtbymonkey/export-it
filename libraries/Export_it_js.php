@@ -1127,6 +1127,32 @@ class Export_it_js
 
 			var channel_id = $(this).attr("rel");
 			$("select#channel_id").val(channel_id);
+
+			$("select#status option").each(function(i, option){ $(option).remove(); });
+			$.getJSON(EE.BASE+"&C=addons_modules&M=show_module_cp&module=export_it&method=channel_options_ajax_filter&option_type=status&channel_id="+channel_id+"&time=" + time, function(data) {
+			
+				$.each(data, function(val, text) {
+					
+				    $("select#status").append(
+				        $("<option></option>").val(val).html(text)
+				    );
+				});
+			
+			});
+						
+
+			$("select#category option").each(function(i, option){ $(option).remove(); });
+			$.getJSON(EE.BASE+"&C=addons_modules&M=show_module_cp&module=export_it&method=channel_options_ajax_filter&option_type=category&channel_id="+channel_id+"&time=" + time, function(data) {
+			
+				$.each(data, function(val, text) {
+					
+				    $("select#category").append(
+				        $("<option></option>").val(val).html(text)
+				    );
+				});
+			
+			});	
+												
 			oTable.fnDraw();
 			return false;
 		});
