@@ -96,6 +96,11 @@ class Member_data
 		{
 			$users = $this->_parse_custom_fields($users);
 		}
+		
+		foreach($users AS $key => $value)
+		{
+			$users[$key]['photo_filename'] = $this->EE->config->config['photo_url'].$value['photo_filename'];
+		}
 		return $users;
 	}
 	
@@ -169,6 +174,7 @@ class Member_data
 		{
 			$users = $this->_parse_custom_fields($users);
 		}
+		
 		return $users;
 	}
 	
