@@ -41,7 +41,6 @@ class Export_it {
 		$this->EE->load->library('json_ordering');
 		$this->EE->load->library('Export_data/export_data');
 		$this->EE->lang->loadfile('export_it');	
-		//$this->EE->export_data->disable_download = TRUE;
 		
 		if(isset($this->EE->TMPL))
 		{
