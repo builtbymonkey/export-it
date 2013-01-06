@@ -62,7 +62,7 @@ class Member_data
 		}
 		else
 		{
-			$this->EE->db->select("members.username, members.member_id, members.screen_name, members.email, members.join_date, members.last_visit, members.group_id, members.member_id, members.in_authorlist, member_groups.group_title");
+			$this->EE->db->select("members.username, members.member_id, members.screen_name, members.email, members.join_date, members.last_visit, members.group_id, members.member_id, members.in_authorlist, member_groups.group_title, members.photo_filename");
 		}
 		
 		$this->EE->db->from('members');	

@@ -41,11 +41,13 @@ class Export_it {
 		$this->EE->load->library('json_ordering');
 		$this->EE->load->library('Export_data/export_data');
 		$this->EE->lang->loadfile('export_it');	
+		//$this->EE->export_data->disable_download = TRUE;
 		
 		if(isset($this->EE->TMPL))
 		{
 			$this->export_format = $this->EE->TMPL->fetch_param('format', 'xls');
 			$this->export_fields = $this->EE->TMPL->fetch_param('export_fields', FALSE);
+			$this->export_filename = $this->EE->TMPL->fetch_param('filename', FALSE);
 			if($this->export_fields)
 			{
 				$parts = explode(',', $this->export_fields);
@@ -91,23 +93,18 @@ class Export_it {
 		$keywords = $this->EE->TMPL->fetch_param('keywords', FALSE);
 		$complete = $this->EE->TMPL->fetch_param('complete_select', FALSE);
 		$channel_id = $this->EE->TMPL->fetch_param('channel_id', FALSE);
+		$channel_name = $this->EE->TMPL->fetch_param('channel', FALSE);
 		$status = $this->EE->TMPL->fetch_param('status', FALSE);
 		$date_range = $this->EE->TMPL->fetch_param('date_range', FALSE);
 		$category = $this->EE->TMPL->fetch_param('category', FALSE);
 		
 		$where = array();
-		
-		if($channel = $this->EE->TMPL->fetch_param('channel', FALSE))
+		if($channel_name)
 		{
-			$channel = $this->EE->channel_data->get_channel_by_name($channel);
-			
+			$channel = $this->EE->channel_data->get_channel_by_name($channel_name);
 			if($channel->num_rows() > 0)
 			{
 				$channel_id = $channel->row('channel_id');
-			}
-			else
-			{
-				return 'channel is invalid :(';
 			}
 		}
 		
@@ -136,8 +133,8 @@ class Export_it {
 			{
 				$param    = preg_replace('/where:/', '', $param);
 				$field    = $this->EE->channel_data->get_field_by_name($param);				
-				$operator = $this->EE->channel_data->sql_operator($value);
-				$value    = $this->EE->channel_data->strip_operators($value);
+				$operator = $this->EE->export_it_lib->sql_operator($value);
+				$value    = $this->EE->export_it_lib->strip_operators($value);
 				
 				if($field->num_rows() > 0)
 				{
@@ -177,7 +174,15 @@ class Export_it {
 		}
 		
 		$data = $this->clean_export_data($this->EE->channel_data->get_entries($where));
-		$this->EE->export_data->export_channel_entries($data, $this->export_format);	
+		if($this->export_filename)
+		{
+			$this->EE->export_data->export_channel_entries($data, $this->export_format, $this->export_filename);
+		}
+		else
+		{
+			$this->EE->export_data->export_channel_entries($data, $this->export_format);
+		}
+		
 		exit;
 	}
 	
@@ -198,7 +203,15 @@ class Export_it {
 		}
 		
 		$data = $this->clean_export_data($this->EE->mailinglist_data->get_list_emails($where));
-		$this->EE->export_data->export_mailing_list($data, $this->export_format);
+		
+		if($this->export_filename)
+		{		
+			$this->EE->export_data->export_mailing_list($data, $this->export_format, $this->export_filename);
+		}
+		else
+		{
+			$this->EE->export_data->export_mailing_list($data, $this->export_format);
+		}
 		exit;		
 	}
 	
@@ -260,8 +273,16 @@ class Export_it {
 			$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['edit_date'] = $comment['edit_date'];
 			$comments[$comment['entry_id']]['comments'][$comment['comment_id']]['comment'] = $comment['comment'];
 		}
-			
-		$this->EE->export_data->export_comments($comments, $this->export_format);
+
+		if($this->export_filename)
+		{		
+			$this->EE->export_data->export_comments($comments, $this->export_format, $this->export_filename);
+		}
+		else
+		{
+			$this->EE->export_data->export_comments($comments, $this->export_format);
+		}
+		
 		exit;		
 	}
 	
@@ -282,7 +303,16 @@ class Export_it {
 		}
 
 		$data = $this->clean_export_data($return);
-		$this->EE->export_data->export_channel_entries($data, $this->export_format, 'matrix');
+		
+		if($this->export_filename)
+		{		
+			$this->EE->export_data->export_channel_entries($data, $this->export_format, $this->export_filename);
+		}
+		else
+		{
+			$this->EE->export_data->export_channel_entries($data, $this->export_format, 'matrix');
+		}
+		
 		exit;	
 	}
 	
@@ -321,7 +351,15 @@ class Export_it {
 		}		
 
 		$data = $this->clean_export_data($arr);
-		$this->EE->export_data->export_channel_entries($data, $this->export_format, 'channel_files_dl_log');
+		
+		if($this->export_filename)
+		{		
+			$this->EE->export_data->export_channel_entries($data, $this->export_format, $this->export_filename);
+		}
+		else
+		{
+			$this->EE->export_data->export_channel_entries($data, $this->export_format, 'channel_files_dl_log');
+		}
 		exit;
 	}
 
@@ -358,7 +396,16 @@ class Export_it {
 		}
 	
 		$data = $this->clean_export_data($arr);
-		$this->EE->export_data->export_channel_entries($data, $this->export_format, 'channel_files');
+		
+		if($this->export_filename)
+		{		
+			$this->EE->export_data->export_channel_entries($data, $this->export_format, $this->export_filename);
+
+		}
+		else
+		{
+			$this->EE->export_data->export_channel_entries($data, $this->export_format, 'channel_files');
+		}
 		exit;
 	}	
 	

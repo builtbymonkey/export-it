@@ -32,7 +32,13 @@ class Export_it_lib
 	 * The full path to the log file for the progress bar
 	 * @var string
 	 */
-	public $progress_log_file;	
+	public $progress_log_file;
+
+	/**
+	 * A list of valid SQL operators
+	 * @var array
+	 */
+	private $valid_operators = array('>', '=>', '<=', '<', '=', '!=', 'LIKE');	
 	
 	public function __construct()
 	{
@@ -238,5 +244,46 @@ class Export_it_lib
 		}
 	}	
 	
+	/**
+	 * Returns a valid SQL operator from a formatted string
+	 * @param string $str
+	 */
+	public function sql_operator($string)
+	{
+		preg_match('/.*\s/', $string, $matches);
+	
+		if(isset($matches[0]))
+		{
+			$match = trim($matches[0]);
+				
+			if(in_array($match, $this->valid_operators))
+			{
+				return ' '.$matches[0];
+			}
+		}
+	
+		return NULL;
+	}
+	
+	/**
+	 * Returns a valid string strips of SQL operators
+	 * @param string $str
+	 */
+	public function strip_operators($string)
+	{
+		preg_match('/.*\s/', $string, $matches);
+	
+		if(isset($matches[0]))
+		{
+			$match = trim($matches[0]);
+				
+			if(in_array($match, $this->valid_operators))
+			{
+				$string = preg_replace('/^'.preg_quote($match).'/', '', $string);
+			}
+		}
+	
+		return trim($string);
+	}	
 	
 }

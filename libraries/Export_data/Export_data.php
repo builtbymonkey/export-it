@@ -54,49 +54,49 @@ class Export_data
 		}		
 	}
 	
-	public function export_channel_entry($data, $export_format)
+	public function export_channel_entry($data, $export_format, $filename = 'channel_entry_export')
 	{
 		switch($export_format)
 		{	
 			case 'xml':
 			default:
-				$this->download_xml($data, 'channel_entry_export.xml', 'channel_entries', 'entry');
+				$this->download_xml($data, $filename.'.xml', 'channel_entries', 'entry');
 			break;
 			
 			case 'json':
-				$this->download_json($data, 'channel_entry_export.json');
+				$this->download_json($data, $filename.'.json');
 			break;
 			
 			case 'xls':
-				$this->download_array($data, TRUE, 'channel_entry_export.xls');
+				$this->download_array($data, TRUE, $filename.'.xls');
 			break;
 		}		
 	}	
 	
-	public function export_comments($data, $format)
+	public function export_comments($data, $format, $filename = 'comment_export')
 	{
 		switch($format)
 		{			
 			case 'disqus':
 			default:
-				$this->download_disqus($data, TRUE, 'comment_export.rss');
+				$this->download_disqus($data, TRUE, $filename.'.rss');
 			break;
 			
 			case 'xml':
-				$this->download_xml($data, 'comment_export.xml', 'Comments', 'comment');
+				$this->download_xml($data, $filename.'.xml', 'Comments', 'comment');
 			break;
 			
 			case 'json':
-				$this->download_json($data, 'comment_export.json');
+				$this->download_json($data, $filename.'.json');
 			break;
 				
 			case 'xls':
-				$this->download_array($data, TRUE, 'comment_export.xls');
+				$this->download_array($data, TRUE, $filename.'.xls');
 			break;					
 		}
 	}
 	
-	public function export_comment($export_format = 'json', $comment_id = '')
+	public function export_comment($export_format = 'json', $comment_id = '', $filename = 'comment_export')
 	{
 		$where = array();
 		if($comment_id != '')
@@ -109,20 +109,20 @@ class Export_data
 		{
 			case 'disqus':
 			default:
-				$this->download_disqus($data, TRUE, 'comment_export.rss');
+				$this->download_disqus($data, TRUE, $filename.'.rss');
 			break;
 			
 			case 'xml':
-				$this->download_xml($data, 'comment_export.xml', 'Comments', 'comment');
+				$this->download_xml($data, $filename.'.xml', 'Comments', 'comment');
 			break;
 			
 			case 'json':
-				$this->download_json($data, 'comment_export.json');
+				$this->download_json($data, $filename.'.json');
 			break;			
 		}
 	}	
 	
-	public function export_members($data, $format = 'xls')
+	public function export_members($data, $format = 'xls', $filename = 'member_export')
 	{
 		if($this->disable_download)
 		{
@@ -171,43 +171,43 @@ class Export_data
 		{
 			case 'xls':
 			default:
-				$this->download_array($data, TRUE, 'member_export.xls');
+				$this->download_array($data, TRUE,  $filename.'.xls');
 			break;
 			
 			case 'ee_xml':
-				$this->download_ee_xml($data, 'ee_member_export.xml');
+				$this->download_ee_xml($data, $filename.'.xml');
 			break;
 			
 			case 'xml':
-				$this->download_xml($data, 'member_export.xml', 'members', 'member');
+				$this->download_xml($data, $filename.'.xml', 'members', 'member');
 			break;
 			
 			case 'json':
-				$this->download_json($data, 'member_export.json');
+				$this->download_json($data, $filename.'.json');
 			break;			
 		}		
 	}	
 	
-	public function export_mailing_list($data, $format = 'xls')
+	public function export_mailing_list($data, $format = 'xls', $filename = 'mailing_list_export')
 	{	
 		switch($format)
 		{
 			case 'xls':
 			default:
-				$this->download_array($data, TRUE, 'mailing_list_export.xls');
+				$this->download_array($data, TRUE, $filename.'.xls');
 			break;
 			
 			case 'xml':
-				$this->download_xml($data, 'mailing_list_export.xml', 'mailing_list', 'subscriber');
+				$this->download_xml($data, $filename.'.xml', 'mailing_list', 'subscriber');
 			break;
 			
 			case 'json':
-				$this->download_json($data, 'mailing_list_export.json');
+				$this->download_json($data, $filename.'.json');
 			break;			
 		}
 	}
 	
-	public function export_category($export_format = 'json', $cat_id = '')
+	public function export_category($export_format = 'json', $cat_id = '', $filename = 'category_export')
 	{
 		$where = array();
 		if($cat_id != '')
@@ -219,16 +219,16 @@ class Export_data
 		switch($export_format)
 		{	
 			case 'xml':
-				$this->download_xml($data, 'category_export.xml', 'categories', 'category');
+				$this->download_xml($data, $filename.'.xml', 'categories', 'category');
 			break;
 			
 			case 'json':
-				$this->download_json($data, 'category_export.json');
+				$this->download_json($data, $filename.'.json');
 			break;			
 		}
 	}
 
-	public function export_category_posts($export_format = 'json', $cat_id = '')
+	public function export_category_posts($export_format = 'json', $cat_id = '', $filename = 'category_posts_export')
 	{
 		$where = array();
 		if($cat_id != '')
@@ -240,16 +240,16 @@ class Export_data
 		switch($export_format)
 		{	
 			case 'xml':
-				$this->download_xml($data, 'category_posts_export.xml', 'entries', 'entry');
+				$this->download_xml($data, $filename.'.xml', 'entries', 'entry');
 			break;
 			
 			case 'json':
-				$this->download_json($data, 'category_posts_export.json');
+				$this->download_json($data, $filename.'.json');
 			break;			
 		}
 	}
 
-	public function export_categories($export_format = 'json', $entry_id = '')
+	public function export_categories($export_format = 'json', $entry_id = '', $filename = 'categories_export')
 	{
 		$where = array();
 		$where['entry_id'] = $entry_id;
@@ -258,11 +258,11 @@ class Export_data
 		switch($export_format)
 		{	
 			case 'xml':
-				$this->download_xml($data, 'categories_export.xml', 'categories', 'category');
+				$this->download_xml($data, $filename.'.xml', 'categories', 'category');
 			break;
 			
 			case 'json':
-				$this->download_json($data, 'categories_export.json');
+				$this->download_json($data, $filename.'.json');
 			break;			
 		}
 	}	
