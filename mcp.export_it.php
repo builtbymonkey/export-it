@@ -316,6 +316,8 @@ class Export_it_mcp
 	
 	public function export()
 	{
+		$this->EE->export_it_lib->setup_memory_limits();
+		
 		$type = $this->EE->input->get_post('type');
 		$export_format = $this->EE->input->get_post('format');
 		switch($type)

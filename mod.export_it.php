@@ -25,13 +25,11 @@ class Export_it {
 	public $return_data	= '';
 	
 	public function __construct()
-	{
-		//ob_start();
-
-		//ob_end_clean();
+	{				
 		$this->EE =& get_instance();
 		$this->EE->load->model('export_it_settings_model', 'export_it_settings');
 		$this->EE->load->library('export_it_lib');
+		
 		$this->settings = $this->EE->export_it_lib->get_settings();
 		$this->EE->load->library('member_data');
 		$this->EE->load->library('channel_data');
@@ -99,6 +97,8 @@ class Export_it {
 	
 	public function channel_entries()
 	{
+		$this->EE->export_it_lib->setup_memory_limits();
+		
 		$keywords = $this->EE->TMPL->fetch_param('keywords', FALSE);
 		$complete = $this->EE->TMPL->fetch_param('complete_select', FALSE);
 		$channel_id = $this->EE->TMPL->fetch_param('channel_id', FALSE);
@@ -149,9 +149,13 @@ class Export_it {
 				{
 					$where['field_id_'.$field->row('field_id').$operator] = $value;	
 				}
+				else
+				{		
+					$where[$param.$operator] = $value;
+				}				
 			}
 		}
-		
+
 		if($category)
 		{
 			$cat_where = array('cat_id' => $category);

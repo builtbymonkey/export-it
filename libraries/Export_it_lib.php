@@ -33,6 +33,19 @@ class Export_it_lib
 	 * @var string
 	 */
 	public $progress_log_file;
+	
+	/**
+	 * The memory limits to attempt setting
+	 * @var array
+	 */
+	public $memory_limits = array(
+		'64MB',
+		'96MB',
+		'128MB',
+		'160MB',
+		'192MB',
+		'256MB'
+	);
 
 	/**
 	 * A list of valid SQL operators
@@ -284,6 +297,17 @@ class Export_it_lib
 		}
 	
 		return trim($string);
-	}	
+	}
+
+	public function setup_memory_limits()
+	{
+		if(function_exists('ini_set'))
+		{
+			foreach($this->memory_limits AS $limit)
+			{
+				//ini_set('memory_limit', $limit);	
+			}
+		}	
+	}
 	
 }
