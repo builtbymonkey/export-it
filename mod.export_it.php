@@ -47,6 +47,7 @@ class Export_it {
 		{
 			$this->export_format = $this->EE->TMPL->fetch_param('format', 'xls');
 			$this->export_fields = $this->EE->TMPL->fetch_param('export_fields', FALSE);
+			$this->exclude_fields = $this->EE->TMPL->fetch_param('exclude_fields', FALSE);
 			$this->export_filename = $this->EE->TMPL->fetch_param('filename', FALSE);
 			if($this->export_fields)
 			{
@@ -56,6 +57,15 @@ class Export_it {
 					$this->export_fields = array_map('trim', $parts);
 				}
 			}
+			
+			if($this->exclude_fields)
+			{
+				$parts = explode(',', $this->exclude_fields);
+				if(count($parts) >= '1')
+				{
+					$this->exclude_fields = array_map('trim', $parts);
+				}
+			}			
 		}
 	}
 	
@@ -139,13 +149,6 @@ class Export_it {
 				if($field->num_rows() > 0)
 				{
 					$where['field_id_'.$field->row('field_id').$operator] = $value;	
-				}
-				else
-				{
-					// This code is optional. You can defined anything, even it if it is
-					// invalid. If it were my add-on, I would let the user fall on their face.
-					
-					$where[$param.$operator] = $value;
 				}
 			}
 		}
@@ -430,9 +433,23 @@ class Export_it {
 				unset($data[$key]);
 			}
 			
-			return $return;
+			$data = $return;
 		}
 		
+		if(is_array($this->exclude_fields) && count($this->exclude_fields) >= '1')
+		{
+			foreach($data AS $key => $value)
+			{
+				foreach($this->exclude_fields AS $index => $field)
+				{
+					if(isset($value[$field]))
+					{
+						unset($data[$key][$field]);
+					}
+				}
+			}			
+		}
+				
 		return $data;
 	}
 	
