@@ -96,6 +96,21 @@ class Export_it {
 		$category = $this->EE->TMPL->fetch_param('category', FALSE);
 		
 		$where = array();
+		
+		if($channel = $this->EE->TMPL->fetch_param('channel', FALSE))
+		{
+			$channel = $this->EE->channel_data->get_channel_by_name($channel);
+			
+			if($channel->num_rows() > 0)
+			{
+				$channel_id = $channel->row('channel_id');
+			}
+			else
+			{
+				return 'channel is invalid :(';
+			}
+		}
+		
 		if($channel_id)
 		{
 			$where['ct.channel_id'] = $channel_id;
@@ -113,6 +128,29 @@ class Export_it {
 		if($status)
 		{
 			$where['status'] = $status;
+		}
+		
+		foreach($this->EE->TMPL->tagparams as $param => $value)
+		{
+			if(preg_match('/where:/', $param))
+			{
+				$param    = preg_replace('/where:/', '', $param);
+				$field    = $this->EE->channel_data->get_field_by_name($param);				
+				$operator = $this->EE->channel_data->sql_operator($value);
+				$value    = $this->EE->channel_data->strip_operators($value);
+				
+				if($field->num_rows() > 0)
+				{
+					$where['field_id_'.$field->row('field_id').$operator] = $value;	
+				}
+				else
+				{
+					// This code is optional. You can defined anything, even it if it is
+					// invalid. If it were my add-on, I would let the user fall on their face.
+					
+					$where[$param.$operator] = $value;
+				}
+			}
 		}
 		
 		if($category)

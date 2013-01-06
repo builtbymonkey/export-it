@@ -63,6 +63,14 @@ class Channel_data
 	 */
 	public $complete_select = FALSE;	
 	
+	
+	/**
+	 * A list of valid SQL operators 
+	 * @var array
+	 */
+	private $valid_operators = array('>', '=>', '<=', '<', '=', '!=', 'LIKE');
+	
+	
 	public function __construct()
 	{
 		$this->EE =& get_instance();
@@ -73,6 +81,119 @@ class Channel_data
 		$this->EE->load->helper('custom_field');
 		$this->EE->load->library('member_data');
 		$this->EE->load->model('category_model');
+	}
+	
+	/**
+	 * Returns a valid SQL operator from a formatted string
+	 * @param string $str
+	 */
+	public function sql_operator($string)
+	{
+		preg_match('/.*\s/', $string, $matches);
+		
+		if(isset($matches[0]))
+		{
+			$match = trim($matches[0]);
+			
+			if(in_array($match, $this->valid_operators))
+			{
+				return ' '.$matches[0];
+			}
+		}
+		
+		return NULL;
+	}
+	
+	/**
+	 * Returns a valid string strips of SQL operators
+	 * @param string $str
+	 */
+	public function strip_operators($string)
+	{
+		preg_match('/.*\s/', $string, $matches);
+		
+		if(isset($matches[0]))
+		{
+			$match = trim($matches[0]);
+			
+			if(in_array($match, $this->valid_operators))
+			{
+				$string = preg_replace('/^'.preg_quote($match).'/', '', $string);
+			}
+		}
+		
+		return trim($string);
+	}
+	
+	/**
+	 * Returns a channel by a given channel_name
+	 * @param string $name
+	 */
+	public function get_channel_by_name($name)
+	{
+		$this->EE->db->where('channel_name', $name);
+		
+		return $this->EE->db->get('channels');
+	}
+	
+	/**
+	 * Returns a channel by a given channel_id
+	 * @param string $name
+	 */
+	public function get_channel($channel_id)
+	{
+		$this->EE->db->where('channel_id', $channel_id);
+		
+		return $this->EE->db->get('channels');
+	}
+	/**
+	 * Returns a channel by a given $where
+	 * @param string $name
+	 */
+	public function get_channels($where = FALSE)
+	{
+		if($where)
+		{
+			$this->gen_where($where);
+		}
+		
+		return $this->EE->db->get('channels');
+	}
+	
+	/**
+	 * Returns a channel field by a given field_name
+	 * @param string $name
+	 */
+	public function get_field_by_name($name)
+	{
+		$this->EE->db->where('field_name', $name);
+		
+		return $this->EE->db->get('channel_fields');
+	}
+	
+	/**
+	 * Returns a channel field by a given field_id
+	 * @param int $id
+	 */
+	public function get_field($id)
+	{
+		$this->EE->db->where('field_id', $id);
+		
+		return $this->EE->db->get('channel_fields');
+	}
+	
+	/**
+	 * Returns the channel fields based on $where
+	 * @param mixed $where
+	 */	
+	public function get_fields($where = FALSE)
+	{
+		if($where)
+		{
+			$this->gen_where($where);
+		}
+		
+		return $this->EE->db->get('channel_fields');
 	}
 	
 	/**
@@ -259,7 +380,17 @@ class Channel_data
 	
 			unset($where['search']);
 		}
+		
+		$this->gen_where($where);
+	}	
 	
+	/**
+	 * An reusable abstraction for the creation of the SQL WHERE outside of
+	 * EE channel entries.
+	 * @param array $where
+	 */
+	public function gen_where($where)
+	{		
 		if(is_array($where) && count($where) >= '1')
 		{
 			foreach($where AS $key => $value)
@@ -278,7 +409,7 @@ class Channel_data
 		{
 			$this->EE->db->where($where);
 		}
-	}	
+	}
 	
 	/**
 	 * Returns an array of the statuses for the channel
