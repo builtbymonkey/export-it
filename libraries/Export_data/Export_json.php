@@ -29,6 +29,10 @@ class Export_json
 	
 	public function generate(array $arr)
 	{
+		if(!isset($this->EE->javascript))
+		{
+			$this->EE->load->library('javascript');
+		}
 		return $this->EE->javascript->generate_json($arr);
 	}
 }

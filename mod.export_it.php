@@ -20,9 +20,44 @@
  * @author		Eric Lamb
  * @filesource 	./system/expressionengine/third_party/export_it/mod.export_it.php
  */
-class Export_it {
+class Export_it 
+{
 
+	/**
+	 * The data to send back to the browser
+	 * @var string
+	 */
 	public $return_data	= '';
+	
+	/**
+	 * The format the exported data
+	 * @var mixed
+	 */
+	public $export_format = FALSE;
+	
+	/**
+	 * What fields to include in the export
+	 * @var mixed
+	 */	
+	public $export_fields = FALSE;
+	
+	/**
+	 * What fields to exclude from the export
+	 * @var mixed
+	 */	
+	public $exclude_fields = FALSE;
+	
+	/**
+	 * The name for the exported file
+	 * @var mixed
+	 */	
+	public $export_filename = FALSE;
+	
+	/**
+	 * Where to save the exported data (name will be prepended)
+	 * @var mixed
+	 */	
+	public $save_path = FALSE;
 	
 	public function __construct()
 	{				
@@ -46,6 +81,9 @@ class Export_it {
 			$this->export_fields = $this->EE->TMPL->fetch_param('export_fields', FALSE);
 			$this->exclude_fields = $this->EE->TMPL->fetch_param('exclude_fields', FALSE);
 			$this->export_filename = $this->EE->TMPL->fetch_param('filename', FALSE);
+			$this->save_path = $this->EE->TMPL->fetch_param('save_path', FALSE);
+			
+			//setup the export_fields array data
 			if($this->export_fields)
 			{
 				$parts = explode(',', $this->export_fields);
@@ -55,6 +93,7 @@ class Export_it {
 				}
 			}
 			
+			//setup the exclude fields aray
 			if($this->exclude_fields)
 			{
 				$parts = explode(',', $this->exclude_fields);
@@ -62,7 +101,23 @@ class Export_it {
 				{
 					$this->exclude_fields = array_map('trim', $parts);
 				}
-			}			
+			}
+
+			//ensure writability on save_path and setup everything needed
+			//NOTE REQUIRES export_filename be set too!
+			if($this->save_path && $this->export_filename)
+			{
+				$this->save_path = realpath($this->save_path);
+				if(is_writable($this->save_path))
+				{
+					$this->EE->export_data->disable_download = TRUE;
+					$this->EE->export_data->save_path = $this->save_path;
+				}
+				else
+				{
+					$this->save_path = FALSE; 
+				}
+			}
 		}
 	}
 	
@@ -188,8 +243,12 @@ class Export_it {
 		{
 			$this->EE->export_data->export_channel_entries($data, $this->export_format);
 		}
-		
 		exit;
+	}
+	
+	public function save_export_data()
+	{
+		$data = ob_get_contents();
 	}
 	
 	public function mailinglist()
@@ -413,9 +472,124 @@ class Export_it {
 			$this->EE->export_data->export_channel_entries($data, $this->export_format, 'channel_files');
 		}
 		exit;
-	}	
+	}
+
+	public function query()
+	{
+		$sql = $this->EE->TMPL->fetch_param('sql', FALSE);
+		if (!$sql || substr(strtolower(trim($sql)), 0, 6) != 'select')
+		{
+			return FALSE;
+		}	
+
+		$query = $this->EE->db->query($sql);
+		if ($query->num_rows() == 0)
+		{
+			return FALSE;
+		}
+		
+		$export_data = array();
+		foreach ($query->result_array() as $count => $row)
+		{
+			$export_data[$count] = $row;
+		}
+
+		switch($this->export_format)
+		{
+			case 'xml':
+			default:
+				$this->EE->export_data->download_xml($export_data, $this->export_filename.'.xml', 'query', 'data');
+			break;
+					
+			case 'json':
+				$this->EE->export_data->download_json($export_data, $this->export_filename.'.json');
+			break;
+					
+			case 'xls':
+				$this->EE->export_data->download_array($export_data, TRUE, $this->export_filename.'.xls');
+			break;
+		}
+		exit;		
+	}
 	
-	public function clean_export_data(array $data)
+	public function ff_entries()
+	{
+		$form_id = $this->EE->TMPL->fetch_param('form_id', FALSE);
+		$form_name = $this->EE->TMPL->fetch_param('form_name', FALSE);
+		$author_id = $this->EE->TMPL->fetch_param('author_id', FALSE);
+		$entry_id = $this->EE->TMPL->fetch_param('entry_id', FALSE);
+		$status = $this->EE->TMPL->fetch_param('status', FALSE);
+		
+		$this->EE->load->library('Freeform_data');
+		$where = array();
+		if($form_name)
+		{
+			$form_data = $this->EE->freeform_data->get_form_by_name($form_name);
+			if(count($form_data) > 0)
+			{
+				$form_id = $form_data['form_id'];
+			}
+		}
+		elseif($form_id)
+		{
+			$form_data = $this->EE->freeform_data->get_form($form_id);
+		}	
+		else
+		{
+			return 'form_id is REQUIRED :(';
+		}
+
+		if($author_id)
+		{
+			$where['author_id'] = $author_id;
+		}
+		
+		if($entry_id)
+		{
+			$where['entry_id'] = $entry_id;
+		}
+		
+		if($status)
+		{
+			$where['status'] = $status;
+		}
+		
+		foreach($this->EE->TMPL->tagparams as $param => $value)
+		{
+			if(preg_match('/where:/', $param))
+			{
+				$param = preg_replace('/where:/', '', $param);
+				$field = $this->EE->freeform_data->get_field_by_name($param);
+				$operator = $this->EE->export_it_lib->sql_operator($value);
+				$value = $this->EE->export_it_lib->strip_operators($value);
+		
+				if($field->num_rows() > 0)
+				{
+					$where['form_field_'.$field->row('field_id').$operator] = $value;
+				}
+				else
+				{
+					$where[$param.$operator] = $value;
+				}
+			}
+		}
+
+		//$total = $this->EE->freeform_data->get_total_entries($form_id, $where);
+		$entries = $this->EE->freeform_data->get_entries($form_id, $where);
+		$entries = $this->clean_export_data($entries);
+		if($this->export_filename)
+		{
+			$this->EE->export_data->export_freeform_entries($entries, $this->export_format, $this->export_filename);
+		
+		}
+		else
+		{
+			$this->EE->export_data->export_freeform_entries($entries, $this->export_format, 'freeform');
+		}
+		exit;				
+	}
+	
+	private function clean_export_data(array $data)
 	{
 		if(is_array($this->export_fields) && count($this->export_fields) >= '1')
 		{

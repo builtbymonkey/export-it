@@ -24,6 +24,8 @@ class Export_data
 {
 	public $disable_download = FALSE;
 	
+	public $save_path = FALSE;
+	
 	public function __construct()
 	{
 		$this->EE =& get_instance();
@@ -35,7 +37,7 @@ class Export_data
 		$this->EE->load->helper('utilities');
 	}
 	
-	public function export_channel_entries($data, $export_format, $filename = 'channel_entry_export')
+	public function export_channel_entries(array $data, $export_format, $filename = 'channel_entry_export')
 	{
 		switch($export_format)
 		{	
@@ -207,6 +209,25 @@ class Export_data
 		}
 	}
 	
+	public function export_freeform_entries($data, $format = 'xls', $filename = 'freeform_export')
+	{
+		switch($format)
+		{
+			case 'xls':
+			default:
+				$this->download_array($data, TRUE, $filename.'.xls');
+				break;
+					
+			case 'xml':
+				$this->download_xml($data, $filename.'.xml', 'freeform', 'entry');
+				break;
+					
+			case 'json':
+				$this->download_json($data, $filename.'.json');
+				break;
+		}
+	}	
+	
 	public function export_category($export_format = 'json', $cat_id = '', $filename = 'category_export')
 	{
 		$where = array();
@@ -269,22 +290,22 @@ class Export_data
 	
 	public function download_json(array $data, $file_name = '')
 	{
+		$export_data = $this->EE->export_json->generate($data);
 		if(!$this->disable_download)
 		{
 			header("Content-type: application/octet-stream");
 			header("Content-Disposition: attachment; filename=\"$file_name\"");
+			echo $export_data;
 		}
-		echo $this->EE->export_json->generate($data);
+		else
+		{
+			$this->save_export($export_data, $file_name);
+		}
+		
 	}
 	
 	public function download_xml($data, $file_name, $root_name, $branch_name = 'item', $subbranch_name = 'sub')
 	{
-		if(!$this->disable_download)
-		{
-			header("Content-type: application/octet-stream");
-			header("Content-Disposition: attachment; filename=\"$file_name\"");
-		}
-
 		$this->EE->load->library('xml_writer');
 	    $this->EE->xml_writer->setRootName($root_name);
 	    $this->EE->xml_writer->initiate();
@@ -300,7 +321,17 @@ class Export_data
 	    	$this->EE->xml_writer->endBranch();
 	    }
 
-	    $this->EE->xml_writer->getXml(true);		
+	    $export_data = $this->EE->xml_writer->getXml(false);	
+	    if(!$this->disable_download)
+	    {
+	    	header("Content-type: application/octet-stream");
+	    	header("Content-Disposition: attachment; filename=\"$file_name\"");
+	    	echo $export_data;
+	    }
+		else
+		{
+			$this->save_export($export_data, $file_name);
+		}	    	
 	}
 	
 	private function _add_xml_nodes($key, $value)
@@ -348,13 +379,19 @@ class Export_data
 	
 	public function download_ee_xml($data, $file_name = FALSE)
 	{
+		$export_data = $this->EE->export_ee_xml->generate($data);
 		if(!$this->disable_download)
 		{
 			header("Content-type: application/octet-stream");
 			header("Content-Disposition: attachment; filename=\"$file_name\"");
+			echo $export_data;
+		}
+		else
+		{
+			$this->save_export($export_data, $file_name);
 		}
 		
-		echo $this->EE->export_ee_xml->generate($data);
+		
 	}
 	
 	/**
@@ -365,29 +402,56 @@ class Export_data
 	 */
 	public function download_array(array $arr, $keys_as_headers = TRUE, $file_name = 'download.txt')
 	{
+		$export_data = $this->EE->export_xls->create($arr, TRUE);
 		if(!$this->disable_download)
 		{
 			header("Content-type: application/octet-stream");
 			header("Content-Disposition: attachment; filename=\"$file_name\"");
+			echo $export_data;
 		}
-		
-		echo $this->EE->export_xls->create($arr, TRUE);
+		else
+		{
+			$this->save_export($export_data, $file_name);
+		}
 	}	
 	
+	/**
+	 * Forces a download of the Disqus data
+	 * @param array $arr
+	 */
 	public function download_disqus(array $arr)
 	{
 		$file_name = 'disqus.rss';
+		$export_data = $this->EE->export_disqus->generate($arr);
 		if(!$this->disable_download)
 		{
 			header("Content-type: application/octet-stream");
 			header("Content-Disposition: attachment; filename=\"$file_name\"");
+			echo $export_data;
+		}
+		else
+		{
+			$this->save_export($export_data, $file_name);
 		}
 				
-		$return = $this->EE->export_disqus->generate($arr);
+		
 		
 		echo $return;
 	}
 	
+	public function save_export($export_data, $file_name)
+	{
+		$path = $this->save_path.'/'.$file_name;
+		$this->EE->load->helper('file');
+		write_file($path, $export_data, 'w');
+		
+	}
+	
+	/**
+	 * Handles cleaning up the member data (remove password, etc)
+	 * @param array $users
+	 * @return multitype:
+	 */
 	private function sanitize_member(array $users)
 	{
 		$count = count($users);
