@@ -47,7 +47,8 @@ class Api_server
 		$this->EE->load->library('Api_server/Api_auth');		
 		$this->settings = $this->EE->export_it_lib->get_settings();
 		$this->_setup_api();
-		$this->EE->export_data->disable_download = TRUE;			
+		$this->EE->export_data->disable_download = TRUE;
+		$this->EE->export_data->enable_api = TRUE;
 	}
 	
 	/**
@@ -353,6 +354,74 @@ class Api_server
 		$data = $this->EE->member_data->get_members($where, FALSE, FALSE, FALSE, 1, FALSE);
 		$this->EE->export_data->export_members($data, $this->format);		
 	}
+	
+	public function get_ff_entries()
+	{
+		$form_id = $this->EE->input->get_post('form_id', FALSE);
+		$form_name = $this->EE->input->get_post('form_name', FALSE);
+		$author_id = $this->EE->input->get_post('author_id', FALSE);
+		$entry_id = $this->EE->input->get_post('entry_id', FALSE);
+		$status = $this->EE->input->get_post('status', FALSE);
+	
+		$this->EE->load->library('Freeform_data');
+		$where = array();
+		if($form_name)
+		{
+			$form_data = $this->EE->freeform_data->get_form_by_name($form_name);
+			if(count($form_data) > 0)
+			{
+				$form_id = $form_data['form_id'];
+			}
+		}
+		elseif($form_id)
+		{
+			$form_data = $this->EE->freeform_data->get_form($form_id);
+		}
+		else
+		{
+			return 'form_id is REQUIRED :(';
+		}
+	
+		if($author_id)
+		{
+			$where['author_id'] = $author_id;
+		}
+	
+		if($entry_id)
+		{
+			$where['entry_id'] = $entry_id;
+		}
+	
+		if($status)
+		{
+			$where['status'] = $status;
+		}
+	
+		foreach($_GET as $param => $value)
+		{
+			if(preg_match('/where:/', $param))
+			{
+				$param = preg_replace('/where:/', '', $param);
+				$field = $this->EE->freeform_data->get_field_by_name($param);
+				$operator = $this->EE->export_it_lib->sql_operator($value);
+				$value = $this->EE->export_it_lib->strip_operators($value);
+	
+				if($field->num_rows() > 0)
+				{
+					$where['form_field_'.$field->row('field_id').$operator] = $value;
+				}
+				else
+				{
+					$where[$param.$operator] = $value;
+				}
+			}
+		}
+	
+		//$total = $this->EE->freeform_data->get_total_entries($form_id, $where);
+		$entries = $this->EE->freeform_data->get_entries($form_id, $where);
+		$this->EE->export_data->export_freeform_entries($entries, $this->format, 'freeform');
+		exit;
+	}	
 	
 	public function get_file()
 	{

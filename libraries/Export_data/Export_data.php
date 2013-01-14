@@ -26,6 +26,8 @@ class Export_data
 	
 	public $save_path = FALSE;
 	
+	public $enable_api = FALSE;
+	
 	public function __construct()
 	{
 		$this->EE =& get_instance();
@@ -297,6 +299,11 @@ class Export_data
 			header("Content-Disposition: attachment; filename=\"$file_name\"");
 			echo $export_data;
 		}
+		elseif($this->enable_api)
+		{
+			header('Content-type: application/json');
+			echo $export_data;
+		}		
 		else
 		{
 			$this->save_export($export_data, $file_name);
@@ -326,6 +333,11 @@ class Export_data
 	    {
 	    	header("Content-type: application/octet-stream");
 	    	header("Content-Disposition: attachment; filename=\"$file_name\"");
+	    	echo $export_data;
+	    }
+	    elseif($this->enable_api)
+	    {
+	    	header('Content-type: text/xml');
 	    	echo $export_data;
 	    }
 		else
@@ -390,8 +402,6 @@ class Export_data
 		{
 			$this->save_export($export_data, $file_name);
 		}
-		
-		
 	}
 	
 	/**
@@ -433,10 +443,6 @@ class Export_data
 		{
 			$this->save_export($export_data, $file_name);
 		}
-				
-		
-		
-		echo $return;
 	}
 	
 	public function save_export($export_data, $file_name)
