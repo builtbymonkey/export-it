@@ -39,11 +39,11 @@ class Export_ee_xml
 	    	{
 	    		if($key == 'password')
 	    		{
-	    			$return .= '<password type="sha1">'.$value.'</password>';
+	    			$return .= '<password type="sha1"><![CDATA['.$value.']]></password>';
 	    		}
 	    		else
 	    		{
-	    			$return .= '<'.$key.'>'.$value.'</'.$key.'>';
+	    			$return .= '<'.$key.'><![CDATA['.$value.']]></'.$key.'>';
 	    		}
 	    	}
 	    	$return .= '</member>';
