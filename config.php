@@ -18,6 +18,6 @@ $config['description'] = 'Allows for the ExpressionEngine data to be exported in
 $config['mod_url_name'] = strtolower($config['class_name']);
 $config['ext_class_name'] = $config['class_name'].'_ext';
 
-$config['version'] = '1.3';
-$config['nsm_addon_updater']['versions_xml'] = 'http://mithra62.com/export-it.xml';
+$config['version'] = '1.3.1';
+//$config['nsm_addon_updater']['versions_xml'] = 'http://mithra62.com/export-it.xml';
 $config['docs_url'] = 'http://mithra62.com/docs/export-it';
