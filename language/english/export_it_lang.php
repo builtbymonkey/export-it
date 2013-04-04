@@ -82,5 +82,10 @@ $lang = array(
 'nav_comments' => 'Comments',
 'nav_channel_entries' => 'Channel Entries',
 'nav_settings' => 'Settings',
+'nav_members_short_desc' => 'Export your ExpressionEngine Members',
+'nav_channel_entries_short_desc' => 'Export your ExpressionEngine Channel Entries',
+'nav_comments_short_desc' => 'Export your ExpressionEngine Comments',
+'nav_mailing_list_short_desc' => 'Export your ExpressionEngine Mailing List',
+'nav_settings_short_desc' => 'Configure the Export It module',
 ''=>''
 );

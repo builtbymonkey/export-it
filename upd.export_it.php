@@ -26,6 +26,8 @@ class Export_it_upd
     public $class = '';
     
     public $settings_table = ''; 
+    
+    public $version = '';
          
     public function __construct() 
     { 

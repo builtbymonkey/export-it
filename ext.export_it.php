@@ -27,7 +27,7 @@ class Export_it_ext
 	
 	public $name = 'Export It';
 	
-	public $version = '1.1.2';
+	public $version = '1.3';
 	
 	public $description	= 'Extension for modifying how exporting works';
 	
@@ -70,59 +70,110 @@ class Export_it_ext
 	
 	public function cp_menu_array($menu)
 	{
+		$menu = ($this->EE->extensions->last_call != '' ? $this->EE->extensions->last_call : $menu);
+
 		//the members export menu
-		$menu['members']['export_members'] = $this->url_base.'members';
+		if($this->EE->session->userdata('can_access_members') == 'y')
+		{
+			$menu['members']['export_members'] = $this->url_base.'members';
+		}
 		
 		//setup channel entries menu
-		$channels = array();
-		$this->EE->load->model('channel_model');
-		$channels = $this->EE->channel_model->get_channels();
-		if(!$channels)
+		if($this->EE->session->userdata('can_access_content') == 'y')
 		{
-			return $menu;
+			$channels = array();
+			$this->EE->load->model('channel_model');
+			$channels = $this->EE->channel_model->get_channels();
+			if(!$channels)
+			{
+				return $menu;
+			}
+			
+			$channels = $channels->result_array();
+			$export_menu = array();
+			$new_menu = array();
+			foreach($channels AS $key => $value)
+			{
+				$this->EE->lang->language['nav_'.$value['channel_title']] = $value['channel_title'];			
+				$export_menu[$value['channel_title']] = $this->url_base.'channel_entries'.AMP.'channel_id='.$value['channel_id'];
+			}
+			
+			$new_menu['publish'] = $menu['content']['publish']; unset($menu['content']['publish']);
+			$new_menu['edit'] = $menu['content']['edit']; unset($menu['content']['edit']);
+			$new_menu['files'] = $menu['content']['files']; unset($menu['content']['files']);
+			$new_menu['export_entries'] = $export_menu;
+			$new_menu['0'] = $menu['content']['0']; unset($menu['content']['0']);
+			$new_menu['overview'] = $menu['content']['overview']; unset($menu['content']['overview']);
+			$menu['content'] = $new_menu;
 		}
-		
-		$channels = $channels->result_array();
-		$export_menu = array();
-		$new_menu = array();
-		foreach($channels AS $key => $value)
-		{
-			$this->EE->lang->language['nav_'.$value['channel_title']] = $value['channel_title'];			
-			$export_menu[$value['channel_title']] = $this->url_base.'channel_entries'.AMP.'channel_id='.$value['channel_id'];
-		}
-		
-		$new_menu['publish'] = $menu['content']['publish']; unset($menu['content']['publish']);
-		$new_menu['edit'] = $menu['content']['edit']; unset($menu['content']['edit']);
-		$new_menu['files'] = $menu['content']['files']; unset($menu['content']['files']);
-		$new_menu['export_entries'] = $export_menu;
-		$new_menu['0'] = $menu['content']['0']; unset($menu['content']['0']);
-		$new_menu['overview'] = $menu['content']['overview']; unset($menu['content']['overview']);
-		$menu['content'] = $new_menu;
 		
 		//setup the Tools menu
-		$new_menu = array();
-		$new_menu['tools_communicate'] = $menu['tools']['tools_communicate']; unset($menu['tools']['tools_communicate']);
-		$new_menu['0'] = $menu['tools']['0']; unset($menu['tools']['0']);
-		$new_menu['tools_utilities'] = $menu['tools']['tools_utilities']; unset($menu['tools']['tools_utilities']);
-		$new_menu['tools_data'] = $menu['tools']['tools_data']; unset($menu['tools']['tools_data']);
-		$new_menu['export'] = array(
-				'members' => $this->url_base.'members', 
-				'channel_entries' => $this->url_base.'channel_entries', 
-				'comments' => $this->url_base.'comments'
-		);
-		
-		$this->EE->load->library('Export_it_lib');
-		if($this->EE->export_it_lib->is_installed_module('Mailinglist'))
+		if($this->EE->session->userdata('can_access_tools') == 'y')
 		{
-			$new_menu['export']['mailing_list'] = $this->url_base.'mailing_list';
+			$new_menu = array();
+			if(!empty($menu['tools']['tools_communicate']))
+			{
+				$new_menu['tools_communicate'] = $menu['tools']['tools_communicate']; 
+				unset($menu['tools']['tools_communicate']);
+			}
+			
+			if(!empty($menu['tools']['0']))
+			{
+				$new_menu['0'] = $menu['tools']['0']; 
+				unset($menu['tools']['0']);
+			}
+			
+			if(!empty($menu['tools']['tools_utilities']))
+			{
+				$new_menu['tools_utilities'] = $menu['tools']['tools_utilities']; 
+				unset($menu['tools']['tools_utilities']);
+			}
+			
+			if(!empty($menu['tools']['tools_data']))
+			{
+				$new_menu['tools_data'] = $menu['tools']['tools_data']; 
+				unset($menu['tools']['tools_data']);
+			}
+			
+			if($this->EE->session->userdata('can_access_modules') == 'y')
+			{
+				$new_menu['export'] = array(
+						'members' => $this->url_base.'members', 
+						'channel_entries' => $this->url_base.'channel_entries', 
+						'comments' => $this->url_base.'comments'
+				);
+				
+				$this->EE->load->library('Export_it_lib');
+				if($this->EE->export_it_lib->is_installed_module('Mailinglist'))
+				{
+					$new_menu['export']['mailing_list'] = $this->url_base.'mailing_list';
+				}
+		
+				$new_menu['export']['0'] = '----';
+				$new_menu['export']['settings'] = $this->url_base.'settings';
+			}
+			
+			if(!empty($menu['tools']['tools_data']))
+			{
+				$new_menu['tools_logs'] = $menu['tools']['tools_logs']; 
+				unset($menu['tools']['tools_logs']);
+			}
+			
+			if(!empty($menu['tools']['1']))
+			{
+				$new_menu['1'] = $menu['tools']['1']; 
+				unset($menu['tools']['1']);
+			}
+			
+			if(!empty($menu['tools']['overview']))
+			{
+				$new_menu['overview'] = $menu['tools']['overview']; 
+				unset($menu['tools']['overview']);
+			}
+			
+			$menu['tools'] = $new_menu;
+		
 		}
-
-		$new_menu['export']['0'] = '----';
-		$new_menu['export']['settings'] = $this->url_base.'settings';
-		$new_menu['tools_logs'] = $menu['tools']['tools_logs']; unset($menu['tools']['tools_logs']);
-		$new_menu['1'] = $menu['tools']['1']; unset($menu['tools']['1']);
-		$new_menu['overview'] = $menu['tools']['overview']; unset($menu['tools']['overview']);
-		$menu['tools'] = $new_menu;
 		
 		return $menu;
 	}
