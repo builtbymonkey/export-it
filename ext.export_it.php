@@ -159,6 +159,8 @@ class Export_it_ext
 				unset($menu['tools']['tools_logs']);
 			}
 			
+			$new_menu = array_merge($new_menu, $menu['tools']);
+			
 			if(!empty($menu['tools']['1']))
 			{
 				$new_menu['1'] = $menu['tools']['1']; 
