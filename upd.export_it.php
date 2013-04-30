@@ -27,7 +27,7 @@ class Export_it_upd
     
     public $settings_table = ''; 
     
-    public $version = '';
+    public $version = '1.3.1';
          
     public function __construct() 
     { 
