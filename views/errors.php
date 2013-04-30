@@ -25,6 +25,7 @@ if(isset($parts['scheme']) && $parts['scheme'] == 'https')
 }	
 $url .= 'mithra62.com';
 ?>
+<div id="filter_ajax_indicator"></div>
 <style>
 
 #m62_system_error

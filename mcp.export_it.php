@@ -57,17 +57,18 @@ class Export_it_mcp
 		$this->url_base = BASE.AMP.$this->query_base;
 		$this->EE->export_it_lib->set_url_base($this->url_base);
 		
-		$this->EE->cp->set_variable('url_base', $this->url_base);
-		$this->EE->cp->set_variable('query_base', $this->query_base);	
-		
 		$this->EE->cp->set_breadcrumb(BASE.AMP.'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module='.$this->mod_name, $this->EE->lang->line('export_it_module_name'));
 		$this->EE->cp->set_right_nav($this->EE->export_it_lib->get_right_menu());	
 		
-		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('export_it_module_name'));
 		
 		$this->errors = $this->EE->export_it_lib->error_check();
-		$this->EE->cp->set_variable('errors', $this->errors);
-		$this->EE->cp->set_variable('settings', $this->settings);
+		$this->EE->load->vars(array(
+				'url_base' => $this->url_base, 
+				'query_base' => $this->query_base, 
+				'settings' => $this->settings, 
+				'errors' => $this->errors, 
+				'cp_page_title' => $this->EE->lang->line('export_it_module_name')
+		));
 		
 	}
 	
@@ -110,7 +111,9 @@ class Export_it_mcp
 				
 		$vars['member_groups_dropdown'] = $this->EE->member_data->get_member_groups();
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('members');
-		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('members'));
+		$this->EE->load->vars(array(
+				'cp_page_title' => $this->EE->lang->line('members')
+		));
 		return $this->EE->load->view('members', $vars, TRUE);		
 	}
 	
@@ -175,7 +178,9 @@ class Export_it_mcp
 		
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('channel_entries');
 		$vars['channel_options'] = $this->EE->export_it_lib->get_comment_channels();
-		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('channel_entries'));
+		$this->EE->load->vars(array(
+				'cp_page_title' => $this->EE->lang->line('channel_entries')
+		));		
 		return $this->EE->load->view('channel_entries', $vars, TRUE);			
 	}
 	
@@ -214,9 +219,7 @@ class Export_it_mcp
 		$vars['date_selected'] = '';
 		$vars['keywords'] = '';
 		$vars['perpage_select_options'] = $this->EE->export_it_lib->perpage_select_options();
-		$vars['export_format'] = $this->EE->export_it_lib->export_formats('mailing_list');
-		
-		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('mailing_list'));		
+		$vars['export_format'] = $this->EE->export_it_lib->export_formats('mailing_list');				
 		
 		$first_date = $this->EE->comment_data->get_first_date();
 		if($first_date)
@@ -233,7 +236,11 @@ class Export_it_mcp
 		$vars['comment_channels'] = $this->EE->export_it_lib->get_comment_channels();
 		$vars['date_select'] = $this->EE->export_it_lib->get_date_select();
 		$vars['status_select'] = $this->EE->export_it_lib->get_status_select();
-		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('comments'));
+		
+		$this->EE->load->vars(array(
+				'cp_page_title' => $this->EE->lang->line('comments')
+		));
+				
 		return $this->EE->load->view('comments', $vars, TRUE);		
 	}
 	
@@ -267,7 +274,10 @@ class Export_it_mcp
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('mailing_list');
 		$vars['mailing_lists'] = $this->EE->mailinglist_data->get_mailing_lists();
 		
-		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('mailing_list'));
+		$this->EE->load->vars(array(
+				'cp_page_title' => $this->EE->lang->line('mailing_list')
+		));
+				
 		return $this->EE->load->view('mailing_list', $vars, TRUE);		
 	}
 	
@@ -295,7 +305,9 @@ class Export_it_mcp
 			}
 		}
 		
-		$this->EE->cp->set_variable('cp_page_title', $this->EE->lang->line('settings'));
+		$this->EE->load->vars(array(
+				'cp_page_title' => $this->EE->lang->line('settings')
+		));		
 		
 		$this->EE->cp->add_js_script('ui', 'accordion'); 
 		$this->EE->javascript->output($this->EE->export_it_js->get_accordian_css()); 		
