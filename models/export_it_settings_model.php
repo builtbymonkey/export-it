@@ -33,15 +33,19 @@ class Export_it_settings_model extends CI_Model
 	 * @param array $_defaults
 	 */		
 	public $_defaults = array(
-						'license_number' => '',
-						'enable_api' => '0',
-						'api_key' => '',
-						'members_list_limit' => '20',
-						'mailing_list_limit' => '20',
-						'comments_list_limit' => '20',
-						'channel_entries_list_limit' => '20',
-						'disable_accordions' => FALSE,
-						'export_it_date_format' => '%M %d, %Y, %h:%i:%s%A'
+		'license_number' => '',
+		'enable_api' => '0',
+		'api_key' => '',
+		'members_list_limit' => '20',
+		'mailing_list_limit' => '20',
+		'comments_list_limit' => '20',
+		'enable_cp_content_menu' => '1',
+		'enable_cp_tools_menu' => '1',
+		'enable_cp_members_menu' => '1',
+		'comments_list_limit' => '20',
+		'channel_entries_list_limit' => '20',
+		'disable_accordions' => FALSE,
+		'export_it_date_format' => '%M %d, %Y, %h:%i:%s%A'
 	);
 	
 	/**
@@ -49,14 +53,14 @@ class Export_it_settings_model extends CI_Model
 	 * @param array $_serialized
 	 */		
 	private $_serialized = array(
-						'replace_me'
+		'replace_me'
 	);
 	
 	private $_val_numeric = array(
-						'members_list_limit',
-						'mailing_list_limit',
-						'comments_list_limit',
-						'channel_entries_list_limit'
+		'members_list_limit',
+		'mailing_list_limit',
+		'comments_list_limit',
+		'channel_entries_list_limit'
 	);
 	
 	/**
@@ -64,7 +68,18 @@ class Export_it_settings_model extends CI_Model
 	 * @param array $_serialized
 	 */		
 	private $_encrypted = array(
-						'api_key'
+		'api_key'
+	);	
+	
+	/**
+	 * The settings items that are binary elements
+	 * @var array
+	 */
+	public $checkboxes = array(
+		'enable_cp_tools_menu',
+		'enable_cp_content_menu',
+		'enable_api',
+		'enable_cp_members_menu'
 	);	
 	
 	public function __construct()
@@ -141,6 +156,14 @@ class Export_it_settings_model extends CI_Model
 	public function update_settings(array $data)
 	{		
 
+		foreach($this->checkboxes As $key => $value)
+		{
+			if(!isset($data[$value]))
+			{
+				$data[$value] = '0';
+			}
+		}
+				
 		foreach($data AS $key => $value)
 		{
 			

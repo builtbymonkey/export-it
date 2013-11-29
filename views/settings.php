@@ -33,6 +33,10 @@ $this->table->set_empty("&nbsp;");
 	$this->table->add_row('<label for="comments_list_limit">'.lang('comments_list_limit').'</label><div class="subtext">'.lang('comments_list_limit_instructions').'</div>', form_input('comments_list_limit', $settings['comments_list_limit'], 'id="comments_list_limit"'. $settings_disable));
 	$this->table->add_row('<label for="mailing_list_limit">'.lang('mailing_list_limit').'</label><div class="subtext">'.lang('mailing_list_limit_instructions').'</div>', form_input('mailing_list_limit', $settings['mailing_list_limit'], 'id="mailing_list_limit"'. $settings_disable));
 	
+	$this->table->add_row('<label for="enable_cp_content_menu">'.lang('enable_cp_content_menu').'</label><div class="subtext">'.lang('enable_cp_content_menu_instructions').'</div>', form_checkbox('enable_cp_content_menu', '1', $settings['enable_cp_content_menu'], 'id="enable_cp_content_menu"'. $settings_disable));
+	$this->table->add_row('<label for="enable_cp_tools_menu">'.lang('enable_cp_tools_menu').'</label><div class="subtext">'.lang('enable_cp_tools_menu_instructions').'</div>', form_checkbox('enable_cp_tools_menu', '1', $settings['enable_cp_tools_menu'], 'id="enable_cp_tools_menu"'. $settings_disable));
+	$this->table->add_row('<label for="enable_cp_members_menu">'.lang('enable_cp_members_menu').'</label><div class="subtext">'.lang('enable_cp_members_menu_instructions').'</div>', form_checkbox('enable_cp_members_menu', '1', $settings['enable_cp_members_menu'], 'id="enable_cp_members_menu"'. $settings_disable));
+	
 	echo $this->table->generate();
 	$this->table->clear();	
 	?>

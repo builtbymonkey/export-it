@@ -72,14 +72,16 @@ class Export_it_ext
 	{
 		$menu = ($this->EE->extensions->last_call != '' ? $this->EE->extensions->last_call : $menu);
 
+		$this->EE->load->library('Export_it_lib');
+		$this->settings = $this->EE->export_it_lib->get_settings();
 		//the members export menu
-		if($this->EE->session->userdata('can_access_members') == 'y')
+		if($this->settings['enable_cp_members_menu'] == '1' && $this->EE->session->userdata('can_access_members') == 'y')
 		{
 			$menu['members']['export_members'] = $this->url_base.'members';
 		}
 		
 		//setup channel entries menu
-		if($this->EE->session->userdata('can_access_content') == 'y')
+		if($this->settings['enable_cp_content_menu'] == '1' && $this->EE->session->userdata('can_access_content') == 'y')
 		{
 			$channels = array();
 			$this->EE->load->model('channel_model');
@@ -108,7 +110,7 @@ class Export_it_ext
 		}
 		
 		//setup the Tools menu
-		if($this->EE->session->userdata('can_access_tools') == 'y')
+		if($this->settings['enable_cp_tools_menu'] == '1' && $this->EE->session->userdata('can_access_tools') == 'y')
 		{
 			$new_menu = array();
 			if(!empty($menu['tools']['tools_communicate']))
