@@ -163,6 +163,7 @@ class Export_it
 		$category = $this->EE->TMPL->fetch_param('category', FALSE);
 		$limit = $this->EE->TMPL->fetch_param('limit', FALSE);
 		$page = $this->EE->TMPL->fetch_param('page', FALSE);
+		$order = $this->EE->TMPL->fetch_param('order', FALSE);
 		
 		$where = array();
 		if($channel_name)
@@ -236,7 +237,7 @@ class Export_it
 			$this->EE->channel_data->complete_select = TRUE;
 		}
 		
-		$data = $this->clean_export_data($this->EE->channel_data->get_entries($where));
+		$data = $this->clean_export_data($this->EE->channel_data->get_entries($where, $limit, $page, $order));
 		if($this->export_filename)
 		{
 			$this->EE->export_data->export_channel_entries($data, $this->export_format, $this->export_filename);
