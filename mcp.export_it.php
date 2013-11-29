@@ -111,9 +111,7 @@ class Export_it_mcp
 				
 		$vars['member_groups_dropdown'] = $this->EE->member_data->get_member_groups();
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('members');
-		$this->EE->load->vars(array(
-				'cp_page_title' => $this->EE->lang->line('members')
-		));
+		$this->EE->view->cp_page_title = $this->EE->lang->line('members');
 		return $this->EE->load->view('members', $vars, TRUE);		
 	}
 	
@@ -178,9 +176,7 @@ class Export_it_mcp
 		
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('channel_entries');
 		$vars['channel_options'] = $this->EE->export_it_lib->get_comment_channels();
-		$this->EE->load->vars(array(
-				'cp_page_title' => $this->EE->lang->line('channel_entries')
-		));		
+		$this->EE->view->cp_page_title = $this->EE->lang->line('channel_entries');
 		return $this->EE->load->view('channel_entries', $vars, TRUE);			
 	}
 	
@@ -236,11 +232,8 @@ class Export_it_mcp
 		$vars['comment_channels'] = $this->EE->export_it_lib->get_comment_channels();
 		$vars['date_select'] = $this->EE->export_it_lib->get_date_select();
 		$vars['status_select'] = $this->EE->export_it_lib->get_status_select();
-		
-		$this->EE->load->vars(array(
-				'cp_page_title' => $this->EE->lang->line('comments')
-		));
-				
+
+		$this->EE->view->cp_page_title = $this->EE->lang->line('comments');
 		return $this->EE->load->view('comments', $vars, TRUE);		
 	}
 	
@@ -274,10 +267,7 @@ class Export_it_mcp
 		$vars['export_format'] = $this->EE->export_it_lib->export_formats('mailing_list');
 		$vars['mailing_lists'] = $this->EE->mailinglist_data->get_mailing_lists();
 		
-		$this->EE->load->vars(array(
-				'cp_page_title' => $this->EE->lang->line('mailing_list')
-		));
-				
+		$this->EE->view->cp_page_title = $this->EE->lang->line('mailing_list');
 		return $this->EE->load->view('mailing_list', $vars, TRUE);		
 	}
 	
@@ -304,10 +294,8 @@ class Export_it_mcp
 				exit;					
 			}
 		}
-		
-		$this->EE->load->vars(array(
-				'cp_page_title' => $this->EE->lang->line('settings')
-		));		
+	
+		$this->EE->view->cp_page_title = $this->EE->lang->line('settings');
 		
 		$this->EE->cp->add_js_script('ui', 'accordion'); 
 		$this->EE->javascript->output($this->EE->export_it_js->get_accordian_css()); 		

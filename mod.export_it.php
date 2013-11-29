@@ -161,6 +161,8 @@ class Export_it
 		$status = $this->EE->TMPL->fetch_param('status', FALSE);
 		$date_range = $this->EE->TMPL->fetch_param('date_range', FALSE);
 		$category = $this->EE->TMPL->fetch_param('category', FALSE);
+		$limit = $this->EE->TMPL->fetch_param('limit', FALSE);
+		$page = $this->EE->TMPL->fetch_param('page', FALSE);
 		
 		$where = array();
 		if($channel_name)
