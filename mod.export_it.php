@@ -118,6 +118,18 @@ class Export_it
 					$this->save_path = FALSE; 
 				}
 			}
+			
+			//now setup the conversion of CURRENT_USER to the proper value
+			if(isset($this->EE->TMPL->tagparams) && is_array($this->EE->TMPL->tagparams))
+			{
+				foreach($this->EE->TMPL->tagparams as $param => $value)
+				{
+					if($value == 'CURRENT_USER')
+					{
+						$this->EE->TMPL->tagparams[$param] = $this->EE->session->userdata('member_id');
+					}
+				}
+			}
 		}
 	}
 	
@@ -164,6 +176,7 @@ class Export_it
 		$limit = $this->EE->TMPL->fetch_param('limit', FALSE);
 		$page = $this->EE->TMPL->fetch_param('page', FALSE);
 		$order = $this->EE->TMPL->fetch_param('order', FALSE);
+		$include_categories = $this->EE->TMPL->fetch_param('include_categories', FALSE);
 		
 		$where = array();
 		if($channel_name)
@@ -235,6 +248,11 @@ class Export_it
 		if($complete && $complete != '')
 		{
 			$this->EE->channel_data->complete_select = TRUE;
+		}
+		
+		if($include_categories)
+		{
+			$this->E->channel_data->include_categories = TRUE;
 		}
 		
 		$data = $this->clean_export_data($this->EE->channel_data->get_entries($where, $limit, $page, $order));
