@@ -87,5 +87,7 @@ $lang = array(
 'nav_comments_short_desc' => 'Export your ExpressionEngine Comments',
 'nav_mailing_list_short_desc' => 'Export your ExpressionEngine Mailing List',
 'nav_settings_short_desc' => 'Configure the Export It module',
+
+'category' => 'Category',
 ''=>''
 );

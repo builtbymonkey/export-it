@@ -634,6 +634,20 @@ class Export_it
 						$return[$key][$field] = '';
 					}
 				}
+				
+				if(!empty($this->EE->channel_data->used_categories)) //special case to handle entry categories
+				{
+					if(!in_array($data[$key], $this->EE->channel_data->used_categories))
+					{
+						foreach($this->EE->channel_data->used_categories AS $cat)
+						{
+							if(array_key_exists($cat, $data[$key]))
+							{
+								$return[$key][$cat] = $data[$key][$cat];
+							}
+						}
+					}
+				}
 				unset($data[$key]);
 			}
 			

@@ -70,6 +70,12 @@ class Channel_data
 	public $include_categories = FALSE;
 	
 	/**
+	 * A collection of categories pulled from a given query
+	 * @var array
+	 */
+	public $used_categories = array();
+	
+	/**
 	 * Flag on how to format the array indexes
 	 * @var bool
 	 */
@@ -222,6 +228,12 @@ class Channel_data
 		}
 
 		$data = $this->EE->db->get()->result_array();
+		
+		//should we grab categorie data too?
+		if($this->include_categories)
+		{
+			$data = $this->setup_entry_categories($data);
+		}
 
 		//echo $this->EE->db->last_query();
 		return $this->_translate_custom_fields($data);
@@ -991,6 +1003,51 @@ class Channel_data
 		{
 			$this->EE->db->insert('category_posts', array('entry_id' => $entry_id, 'cat_id' => $cat));
 		}
+	}
+	
+	/**
+	 * Adds the entry categories to the set
+	 * @param array $entries
+	 * @return unknown
+	 */
+	public function setup_entry_categories(array $entries)
+	{
+		if(!$entries)
+		{
+			return $entries;
+		}
+		
+		$entry_ids = array();
+		foreach($entries AS $key => $value)
+		{
+			$entry_ids[] = $value['entry_id'];
+		}
+
+		$categories = $this->EE->db->select("c.*, cp.entry_id")
+								   ->from('categories c')
+								   ->join('category_posts cp', 'cp.cat_id = c.cat_id')
+								   ->where_in('cp.entry_id', $entry_ids)
+								   ->get()->result_array();
+
+		foreach($entries AS $key => $value)
+		{
+			foreach($categories AS $cat)
+			{
+				$cat_key = ($this->named_labels ? $cat['cat_name'].' - '.lang('category') : $cat['cat_url_title'].'_cat');
+				if($cat['entry_id'] == $value['entry_id'])
+				{
+					$entries[$key][$cat_key] = '1';
+				}
+				else
+				{
+					$entries[$key][$cat_key] = (!empty($entries[$key][$cat_key]) ? $entries[$key][$cat_key] : '0');
+				}
+				
+				$this->used_categories[$cat_key] = $cat_key;
+			}
+		}
+
+		return $entries;
 	}
 	
 	public function make_url_title($title, $channel_id = FALSE)
