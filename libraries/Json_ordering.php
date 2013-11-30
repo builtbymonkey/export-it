@@ -75,7 +75,7 @@
 			}
 		}
 		
-		return $this->EE->javascript->generate_json($return, TRUE);
+		return json_encode($return);
 	}
 	
 	/**
@@ -182,7 +182,7 @@
 		}
 	
 		$j_response['aaData'] = $tdata;
-		return $this->EE->javascript->generate_json($j_response, TRUE);
+		return json_encode($j_response);
 	}
 	
 	/**
@@ -277,7 +277,7 @@
 		}
 	
 		$j_response['aaData'] = $tdata;
-		return $this->EE->javascript->generate_json($j_response, TRUE);
+		return json_encode($j_response);
 	}
 	
 	/**
@@ -361,7 +361,7 @@
 		}
 	
 		$j_response['aaData'] = $tdata;
-		return $this->EE->javascript->generate_json($j_response, TRUE);
+		return json_encode($j_response);
 	}
 	
 	/**
@@ -448,6 +448,6 @@
 		}		
 
 		$j_response['aaData'] = $tdata;	
-		return $this->EE->javascript->generate_json($j_response, TRUE);	
+		return json_encode($j_response);	
 	}	
 }

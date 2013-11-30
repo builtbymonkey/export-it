@@ -63,6 +63,12 @@ class Channel_data
 	 */
 	public $complete_select = FALSE;	
 	
+	/**
+	 * Whether to include the entry categories as columns in the export
+	 * @var bool
+	 */
+	public $include_categories = FALSE;
+	
 	public function __construct()
 	{
 		$this->EE =& get_instance();
@@ -209,10 +215,10 @@ class Channel_data
 			$this->EE->db->order_by($order);
 		}
 
-		$data = $this->EE->db->get();
-		
+		$data = $this->EE->db->get()->result_array();
+
 		//echo $this->EE->db->last_query();
-		return $this->_translate_custom_fields($data->result_array());
+		return $this->_translate_custom_fields($data);
 	}
 	
 	/**

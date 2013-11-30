@@ -191,7 +191,7 @@ class Export_it_mcp
 		$type = ($this->EE->input->get_post('option_type')) ? $this->EE->input->get_post('option_type') : FALSE;
 		if(!$channel_id)
 		{
-			return $this->EE->javascript->generate_json(array('' => 'All'), TRUE);
+			return json_encode(array('' => 'All'));
 		}
 		
 		die($this->EE->json_ordering->channel_options($channel_id, $type));

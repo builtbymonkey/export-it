@@ -33,6 +33,6 @@ class Export_json
 		{
 			$this->EE->load->library('javascript');
 		}
-		return $this->EE->javascript->generate_json($arr);
+		return json_encode($arr);
 	}
 }
