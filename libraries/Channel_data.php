@@ -69,6 +69,12 @@ class Channel_data
 	 */
 	public $include_categories = FALSE;
 	
+	/**
+	 * Flag on how to format the array indexes
+	 * @var bool
+	 */
+	public $named_labels = FALSE;
+	
 	public function __construct()
 	{
 		$this->EE =& get_instance();
@@ -486,8 +492,9 @@ class Channel_data
 			{
 				if(array_key_exists('field_id_'.$field['field_id'], $entry))
 				{
-					$data[$key][$field['field_name']] = $entry['field_id_'.$field['field_id']];
-					$data[$key][$field['field_name']] = $this->clean_custom_field($data[$key], $entry, $field);
+					$entry_key = ($this->named_labels ? $field['field_label'] : $field['field_name']);
+					$data[$key][$entry_key] = $entry['field_id_'.$field['field_id']];
+					$data[$key][$entry_key] = $this->clean_custom_field($data[$key], $entry, $field);
 				}
 			}
 		}
@@ -516,67 +523,68 @@ class Channel_data
 	 */
 	public function clean_custom_field($data, $entry, $field)
 	{
+		$entry_key = ($this->named_labels ? $field['field_label'] : $field['field_name']);
 		switch($field['field_type'])
 		{
 			case 'image':
 			case 'file':
-				$data[$field['field_name']] = $this->clean_image_data($entry['field_id_'.$field['field_id']]);	
+				$data[$entry_key] = $this->clean_image_data($entry['field_id_'.$field['field_id']]);	
 			break;
 			
 			case 'date':
-				$data[$field['field_name']] = m62_convert_timestamp($entry['field_id_'.$field['field_id']]);
+				$data[$entry_key] = m62_convert_timestamp($entry['field_id_'.$field['field_id']]);
 			break;			
 			
 			case 'assets':
-				$data[$field['field_name']] = $this->clean_assets_data($entry['field_id_'.$field['field_id']]);
+				$data[$entry_key] = $this->clean_assets_data($entry['field_id_'.$field['field_id']]);
 			break;
 			
 			case 'playa':
-				$data[$field['field_name']] = $this->clean_playa_data($entry['field_id_'.$field['field_id']]);	
+				$data[$entry_key] = $this->clean_playa_data($entry['field_id_'.$field['field_id']]);	
 			break;
 			
 			case 'channel_files':
-				$data[$field['field_name']] = $this->clean_channel_files_data($entry['entry_id'], $field['field_id']);	
+				$data[$entry_key] = $this->clean_channel_files_data($entry['entry_id'], $field['field_id']);	
 			break;
 			
 			case 'vmg_chosen_member':
-				$data[$field['field_name']] = $this->clean_vmg_chosen_member_data($entry['field_id_'.$field['field_id']]);	
+				$data[$entry_key] = $this->clean_vmg_chosen_member_data($entry['field_id_'.$field['field_id']]);	
 			break;
 			
 			case 'tagger':
-				$data[$field['field_name']] = $this->clean_tagger_data($entry['field_id_'.$field['field_id']]);	
+				$data[$entry_key] = $this->clean_tagger_data($entry['field_id_'.$field['field_id']]);	
 			break;
 			
 			case 'channel_videos':
-				$data[$field['field_name']] = $this->clean_channel_videos_data($entry['entry_id'], $field['field_id']);	
+				$data[$entry_key] = $this->clean_channel_videos_data($entry['entry_id'], $field['field_id']);	
 			break;	
 	
 			case 'securitee':
-				$data[$field['field_name']] = $this->clean_securitee_data($entry['field_id_'.$field['field_id']]);	
+				$data[$entry_key] = $this->clean_securitee_data($entry['field_id_'.$field['field_id']]);	
 			break;
 			
 			case 'matrix':
-				$data[$field['field_name']] = $this->clean_matrix_data($entry['entry_id'], $field['field_id']);	
+				$data[$entry_key] = $this->clean_matrix_data($entry['entry_id'], $field['field_id']);	
 			break;
 			
 			case 'cartthrob_price_simple':
-				$data[$field['field_name']] = $this->clean_cartthrob_price_simple_data($entry['field_id_'.$field['field_id']]);
+				$data[$entry_key] = $this->clean_cartthrob_price_simple_data($entry['field_id_'.$field['field_id']]);
 			break;
 			
 			case 'cartthrob_price_modifiers':
-				$data[$field['field_name']] = $this->clean_cartthrob_price_modifiers_data($entry['field_id_'.$field['field_id']]);
+				$data[$entry_key] = $this->clean_cartthrob_price_modifiers_data($entry['field_id_'.$field['field_id']]);
 			break;
 			
 			case 'cartthrob_discount':
-				$data[$field['field_name']] = $this->clean_cartthrob_discount_data($entry['field_id_'.$field['field_id']]);
+				$data[$entry_key] = $this->clean_cartthrob_discount_data($entry['field_id_'.$field['field_id']]);
 			break;
 
 			case 'cartthrob_order_items':
-				$data[$field['field_name']] = $this->clean_cartthrob_order_items($entry['entry_id'], $entry['field_id_'.$field['field_id']]);
+				$data[$entry_key] = $this->clean_cartthrob_order_items($entry['entry_id'], $entry['field_id_'.$field['field_id']]);
 			break;
 		}
 
-		return $data[$field['field_name']];
+		return $data[$entry_key];
 	}
 	
 	public function clean_cartthrob_price_simple_data($str)

@@ -177,6 +177,7 @@ class Export_it
 		$page = $this->EE->TMPL->fetch_param('page', FALSE);
 		$order = $this->EE->TMPL->fetch_param('order', FALSE);
 		$include_categories = $this->EE->TMPL->fetch_param('include_categories', FALSE);
+		$named_labels = $this->EE->TMPL->fetch_param('named_labels', FALSE);
 		
 		$where = array();
 		if($channel_name)
@@ -252,7 +253,12 @@ class Export_it
 		
 		if($include_categories)
 		{
-			$this->E->channel_data->include_categories = TRUE;
+			$this->EE->channel_data->include_categories = TRUE;
+		}
+		
+		if($named_labels)
+		{
+			$this->EE->channel_data->named_labels = TRUE;
 		}
 		
 		$data = $this->clean_export_data($this->EE->channel_data->get_entries($where, $limit, $page, $order));
