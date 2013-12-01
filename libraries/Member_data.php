@@ -1,38 +1,31 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
  /**
- * mithra62 - Export It
+ * mithra62 - CT Admin
  *
- * @package		mithra62:Export_it
+ * @package		mithra62:Ct_admin
  * @author		Eric Lamb
- * @copyright	Copyright (c) 2011, mithra62, Eric Lamb.
- * @link		http://mithra62.com/projects/view/export-it/
- * @version		1.0
- * @filesource 	./system/expressionengine/third_party/export_it/
+ * @copyright	Copyright (c) 2012, mithra62, Eric Lamb.
+ * @link		http://mithra62.com/projects/view/ct-admin/
+ * @since		1.4.1
+ * @filesource 	./system/expressionengine/third_party/ct_admin/
  */
  
  /**
- * Export It - Member Data Class
+ * CT Admin - Member Data Class
  *
  * Contains all the methods for interacting with the EE member system
  *
- * @package 	mithra62:Export_it
+ * @package 	mithra62:Ct_admin
  * @author		Eric Lamb
- * @filesource 	./system/expressionengine/third_party/export_it/libraries/Member_data.php
+ * @filesource 	./system/expressionengine/third_party/ct_admin/libraries/Member_data.php
  */
 class Member_data
 {
-	public $custom_fields = FALSE;
-	
 	public function __construct()
 	{
 		$this->EE =& get_instance();
 		$this->EE->load->model('member_model');
-		
-		if(!$this->custom_fields)
-		{
-			$this->custom_fields = $this->EE->member_model->get_custom_member_fields()->result_array();
-		}
 	}
 
 	public function register_update($data)
@@ -62,18 +55,26 @@ class Member_data
 		}
 		else
 		{
-			$this->EE->db->select("members.username, members.member_id, members.screen_name, members.email, members.join_date, members.last_visit, members.group_id, members.member_id, members.in_authorlist, member_groups.group_title, members.photo_filename");
+			$this->EE->db->select("members.username, members.member_id, members.screen_name, members.email, members.join_date, members.last_visit, members.group_id, members.member_id, members.in_authorlist, member_groups.group_title");
 		}
 		
-		$this->EE->db->from('members');	
+		$this->EE->db->from('members');
+
+		if(is_array($where) && count($where) >= '1')
+		{
+			foreach($where AS $key => $value)
+			{
+				$this->EE->db->where($key, $value);
+			}
+		}
+		elseif($where)
+		{
+			$this->EE->db->where($where);
+		}
+		
 		$this->EE->db->join('member_groups', 'member_groups.group_id = members.group_id');
 		$this->EE->db->join('member_data', 'member_data.member_id = members.member_id');
 		
-		if($where)
-		{
-			$this->build_member_filter_where($where);
-		}
-				
 		if($include_custom_fields)
 		{
 			$this->EE->db->select('member_data.*');
@@ -96,37 +97,44 @@ class Member_data
 		{
 			$users = $this->_parse_custom_fields($users);
 		}
-		
-		foreach($users AS $key => $value)
-		{
-			$users[$key]['photo_filename'] = $this->EE->config->config['photo_url'].$value['photo_filename'];
-		}
 		return $users;
 	}
 	
 	public function get_total_members($where = FALSE)
 	{
-		if($where)
+		if(is_array($where) && count($where) >= '1')
 		{
-			$this->build_member_filter_where($where);
+			foreach($where AS $key => $value)
+			{
+				$this->EE->db->where($key, $value);
+			}
+		}
+		elseif($where)
+		{
+			$this->EE->db->where($where);
 		}
 		
 		$this->EE->db->join('member_data', 'member_data.member_id = members.member_id');
-		$this->EE->db->join('member_groups', 'member_groups.group_id = members.group_id');
 		$data = $this->EE->db->count_all_results('members');
 		return $data;	
 	}
 	
 	public function get_first_date($where = FALSE)
 	{
-		if($where)
+		if(is_array($where) && count($where) >= '1')
 		{
-			$this->build_member_filter_where($where);
+			foreach($where AS $key => $value)
+			{
+				$this->EE->db->where($key, $value);
+			}
+		}
+		elseif($where)
+		{
+			$this->EE->db->where($where);
 		}	
 		
 		$this->EE->db->select_min('join_date');	
 		$this->EE->db->join('member_data', 'member_data.member_id = members.member_id');
-		$this->EE->db->join('member_groups', 'member_groups.group_id = members.group_id');
 		$data = $this->EE->db->get('members');
 		return $data->row('join_date');
 	}	
@@ -157,24 +165,10 @@ class Member_data
 		$data = $this->EE->db->get();
 		$users = $data->result_array();
 		
-		foreach($users AS $key => $value)
-		{
-			if(isset($value['join_date']))
-			{
-				$users[$key]['join_date'] = m62_convert_timestamp($value['join_date']);
-			}
-			
-			if(isset($value['last_visit']))
-			{
-				$users[$key]['last_visit'] = m62_convert_timestamp($value['last_visit']);
-			}			
-		}
-
 		if($include_custom_fields)
 		{
 			$users = $this->_parse_custom_fields($users);
 		}
-		
 		return $users;
 	}
 	
@@ -236,10 +230,12 @@ class Member_data
 	
 	private function _generate_member_fields($data)
 	{
+		$this->EE->load->helper('security');
+		
 		$group_id = (isset($data['group_id']) ? $data['group_id'] : $this->get_group_id(array('group_title' => $data['access'])));
 		$data = array(
 			'username'		=> $data['username'],
-			'password'		=> $this->EE->functions->hash($data['password']),
+			'password'		=> do_hash($data['password']),
 			'ip_address'	=> $this->EE->input->ip_address(),
 			'unique_id'		=> $this->EE->functions->random('encrypt'),
 			'join_date'		=> $this->EE->localize->now,
@@ -254,10 +250,7 @@ class Member_data
 									$this->EE->config->item('time_format') : 'us',
 			'timezone'		=> ($this->EE->config->item('default_site_timezone') &&
 								$this->EE->config->item('default_site_timezone') != '') ?
-									$this->EE->config->item('default_site_timezone') : $this->EE->config->item('server_timezone'),
-			'daylight_savings' => ($this->EE->config->item('default_site_dst') &&
-									$this->EE->config->item('default_site_dst') != '') ?
-										$this->EE->config->item('default_site_dst') : $this->EE->config->item('daylight_savings')
+									$this->EE->config->item('default_site_timezone') : $this->EE->config->item('server_timezone')
 		);
 
 		return $data;
@@ -275,65 +268,4 @@ class Member_data
 		
 		return $arr;
 	}
-	
-	public function build_member_filter_where($where)
-	{	
-		if(isset($where['date_range']) && $where['date_range'] != 'custom_date')
-		{
-			if(is_numeric($where['date_range']))
-			{
-				$this->EE->db->where('join_date >', (mktime()-($where['date_range']*24*60*60)));
-			}
-			else
-			{
-				$parts = explode('to', $where['date_range']);
-				if(count($parts) == '2')
-				{
-					$start = strtotime($parts['0']);
-					$end = strtotime($parts['1']);
-					$where_date = " join_date BETWEEN '$start' AND '$end'";
-					$this->EE->db->where($where_date, null, FALSE);
-				}
-			}
-			
-			unset($where['date_range']);
-		}
-	
-		if(isset($where['search']))
-		{
-			$cols = array();
-			foreach($this->custom_fields AS $field)
-			{
-				$cols[] = "m_field_id_".$field['m_field_id']." LIKE '%".$where['search']."%'";
-			}
-				
-			$more = array('email', 'username','screen_name');
-			foreach($more AS $field)
-			{
-				$cols[] = $field." LIKE '%".$where['search']."%'";
-			}
-				
-			if(count($cols) >= 1)
-			{
-				$str_where = " (".implode(' OR ', $cols).") ";
-				$this->EE->db->where($str_where, null, FALSE);
-			}
-			
-			unset($where['search']);
-		}
-	
-		if(is_array($where) && count($where) >= '1')
-		{
-			foreach($where AS $key => $value)
-			{
-				$this->EE->db->where($key, $value);
-			}
-		}
-		elseif(is_string($where))
-		{
-			$this->EE->db->where($where);
-		}
-				
-		return $where;
-	}	
 }

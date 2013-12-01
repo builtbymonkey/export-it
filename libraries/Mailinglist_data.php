@@ -135,4 +135,43 @@ class Mailinglist_data
 		}
 		return $arr;
 	}	
+	
+	public function get_list_id($list_name, $list_title)
+	{
+		$this->EE->db->select("ml.*");
+		$this->EE->db->from('mailing_lists ml');
+		$this->EE->db->where('ml.list_name', $list_name);
+		$data = $this->EE->db->get();
+		if($data->num_rows == '0')
+		{
+			$data = array(
+					'list_template' => trim($this->default_template_data()),
+					'list_title' => $list_title,
+					'list_name' => $list_name
+			);
+			$this->EE->db->insert('mailing_lists', $data);
+			return $this->EE->db->insert_id();
+		}
+		else
+		{
+			$row = $data->row();
+			return $row->list_id;
+		}
+	}	
+	
+	public function subscribe_email($list_id, $email)
+	{
+		$this->EE->db->query("DELETE FROM exp_mailing_list_queue WHERE email = '".$this->EE->db->escape_str($email)."' AND list_id = '".$this->EE->db->escape_str($list_id)."'");
+		$query = $this->EE->db->query("SELECT count(*) AS count FROM exp_mailing_list WHERE email = '".$this->EE->db->escape_str($email)."' AND list_id = '".$this->EE->db->escape_str($list_id)."'");
+		if($query->row('count') == '0')
+		{
+			$data = array(
+					'email' => trim($email),
+					'list_id' => $list_id,
+					'ip_address' => $this->EE->input->ip_address(),
+					'authcode' => $this->EE->functions->random('alnum', 10)
+			);
+			$this->EE->db->insert('mailing_list', $data);
+		}
+	}	
 }
