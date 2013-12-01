@@ -136,6 +136,11 @@ class Mailinglist_data
 		return $arr;
 	}	
 	
+	/**
+	 * Returns the list_id column based on $list_name and creates it if it doesn't exist
+	 * @param string $list_name
+	 * @param string $list_title
+	 */
 	public function get_list_id($list_name, $list_title)
 	{
 		$this->EE->db->select("ml.*");
@@ -159,10 +164,15 @@ class Mailinglist_data
 		}
 	}	
 	
+	/**
+	 * Adds an email address to a mailing list
+	 * @param int $list_id
+	 * @param string $email
+	 */
 	public function subscribe_email($list_id, $email)
 	{
-		$this->EE->db->query("DELETE FROM exp_mailing_list_queue WHERE email = '".$this->EE->db->escape_str($email)."' AND list_id = '".$this->EE->db->escape_str($list_id)."'");
-		$query = $this->EE->db->query("SELECT count(*) AS count FROM exp_mailing_list WHERE email = '".$this->EE->db->escape_str($email)."' AND list_id = '".$this->EE->db->escape_str($list_id)."'");
+		$this->EE->db->query("DELETE FROM ".$this->dbprefix."mailing_list_queue WHERE email = '".$this->EE->db->escape_str($email)."' AND list_id = '".$this->EE->db->escape_str($list_id)."'");
+		$query = $this->EE->db->query("SELECT count(*) AS count FROM ".$this->dbprefix."mailing_list WHERE email = '".$this->EE->db->escape_str($email)."' AND list_id = '".$this->EE->db->escape_str($list_id)."'");
 		if($query->row('count') == '0')
 		{
 			$data = array(

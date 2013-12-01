@@ -59,6 +59,9 @@ class Export_it
 	 */	
 	public $save_path = FALSE;
 	
+	/**
+	 * Set everything up
+	 */
 	public function __construct()
 	{				
 		$this->EE =& get_instance();
@@ -75,6 +78,7 @@ class Export_it
 		$this->EE->load->library('Export_data/export_data');
 		$this->EE->lang->loadfile('export_it');	
 		
+		//we only care about this for template tags and not ACT actions
 		if(isset($this->EE->TMPL))
 		{
 			$this->export_format = $this->EE->TMPL->fetch_param('format', 'xls');
@@ -388,6 +392,10 @@ class Export_it
 		}
 				
 		$data = $this->EE->channel_data->clean_matrix_data($entry_id, $field_id);
+		if(!$data)
+		{
+			return lang('no_matrix_export_found');
+		}
 		$return = array();
 		foreach($data AS $key => $value)
 		{

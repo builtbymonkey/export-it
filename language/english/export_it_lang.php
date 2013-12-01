@@ -89,5 +89,12 @@ $lang = array(
 'nav_settings_short_desc' => 'Configure the Export It module',
 
 'category' => 'Category',
+'no_matrix_export_found' => 'No Matrix Export Found',
+'enable_cp_content_menu' => 'Enable CP Content Menu',
+'enable_cp_content_menu_instructions' => 'Should Export It create a sub menu to the channel entries panel under the Content menu?',
+'enable_cp_tools_menu' => 'Enable CP Tools Menu',
+'enable_cp_tools_menu_instructions' => 'Should Export It create a sub menu to the main export panel under the Tools menu?',
+'enable_cp_members_menu' => 'Enable CP Members Menu',
+'enable_cp_members_menu_instructions' => 'Should Export It create a sub menu to the members export panel under the Members menu?',
 ''=>''
 );
