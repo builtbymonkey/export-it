@@ -1011,12 +1011,18 @@ class Export_it_js
 			var status = $("#status").val();
 			var category = $("#category").val();
 			var complete_select = "0";
+			var include_categories = "0";
 			if($("#complete_select").is(":checked"))
 			{
 				complete_select = "1";
 			}
+						
+			if($("#include_categories").is(":checked"))
+			{
+				include_categories = "1";
+			}						
 			
-			var dataString = "status="+status+"&category=" + category + "&complete_select=" + complete_select + "&format=" +format+ "&date_range="+ date_range + "&channel_id=" + channel_id + "&keywords=" + keywords;
+			var dataString = "status="+status+"&category=" + category + "&complete_select=" + complete_select + "&format=" +format+ "&date_range="+ date_range + "&channel_id=" + channel_id + "&keywords=" + keywords + "&include_categories=" + include_categories;
 			if(channel_id == "0")
 			{
 				alert("Please select a channel first");

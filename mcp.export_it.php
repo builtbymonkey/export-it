@@ -414,6 +414,7 @@ class Export_it_mcp
 				$status = ($this->EE->input->get_post('status') && $this->EE->input->get_post('status') != '') ? $this->EE->input->get_post('status') : FALSE;
 				$date_range = ($this->EE->input->get_post('date_range') && $this->EE->input->get_post('date_range') != '') ? $this->EE->input->get_post('date_range') : FALSE;
 				$category = ($this->EE->input->get_post('category') && $this->EE->input->get_post('category') != '') ? $this->EE->input->get_post('category') : FALSE;
+				$include_categories = ($this->EE->input->get_post('include_categories')) ? $this->EE->input->get_post('include_categories') : FALSE;
 				
 				$where = array();
 				if($channel_id)
@@ -452,6 +453,11 @@ class Export_it_mcp
 				if($complete && $complete != '')
 				{
 					$this->EE->channel_data->complete_select = TRUE;
+				}
+
+				if($include_categories)
+				{
+					$this->EE->channel_data->include_categories = TRUE;
 				}
 				
 				$data = $this->EE->channel_data->get_entries($where);

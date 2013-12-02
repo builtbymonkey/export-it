@@ -96,5 +96,6 @@ $lang = array(
 'enable_cp_tools_menu_instructions' => 'Should Export It create a sub menu to the main export panel under the Tools menu?',
 'enable_cp_members_menu' => 'Enable CP Members Menu',
 'enable_cp_members_menu_instructions' => 'Should Export It create a sub menu to the members export panel under the Members menu?',
+'include_categories' => 'Include Categories',
 ''=>''
 );

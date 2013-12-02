@@ -18,8 +18,13 @@ $this->load->view('errors');
 				<?=form_dropdown('export_format', $export_format, FALSE, 'id="export_format"')?>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
 				
+				<?=form_label(lang('include_categories'), 'include_categories')?>&nbsp;
+				<?=form_checkbox('include_categories', '1', FALSE, 'id="include_categories"')?> 		
+				
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+				
 				<?=form_label(lang('complete_select'), 'complete_select')?>&nbsp;
-				<?=form_checkbox('complete_select', '1', FALSE, 'id="complete_select"')?> 				 
+				<?=form_checkbox('complete_select', '1', FALSE, 'id="complete_select"')?> 							 
 				
 				<input type="hidden" value="" name="perpage" id="f_perpage" />
 				<input type="hidden" value="<?php echo $default_start_date; ?>" id="default_start_date" />
