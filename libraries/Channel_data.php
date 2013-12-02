@@ -190,7 +190,7 @@ class Channel_data
 	 * Returns the entries
 	 * @param mixed $where
 	 */
-	public function get_entries($where = FALSE, $limit = FALSE, $page = '0', $order = 'entry_date DESC')
+	public function get_entries($where = FALSE, $limit = FALSE, $page = FALSE, $order = 'entry_date DESC')
 	{
 		if(isset($where['search']) && !$this->channel_field_ids)
 		{

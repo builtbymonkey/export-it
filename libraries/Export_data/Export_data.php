@@ -412,16 +412,44 @@ class Export_data
 	 */
 	public function download_array(array $arr, $keys_as_headers = TRUE, $file_name = 'download.txt')
 	{
-		$export_data = $this->EE->export_xls->create($arr, TRUE);
-		if(!$this->disable_download)
+		//are we dealing with PHPExcel?
+		$phpexcel = PATH_THIRD . 'export_it/libraries/Export_data/PHPExcel/PHPExcel.php';
+		if(file_exists($phpexcel))
 		{
-			header("Content-type: application/octet-stream");
-			header("Content-Disposition: attachment; filename=\"$file_name\"");
-			echo $export_data;
+			$this->EE->load->file($phpexcel);
+			$this->EE->load->library('Export_data/Phpexcel_lib');
+			$this->EE->phpexcel_lib->create($arr, TRUE);
+			$file_name = str_replace('xls', 'xlsx', $file_name);
+			
+			if(!$this->disable_download)
+			{
+				header("Content-type: application/octet-stream");
+				header("Content-Disposition: attachment; filename=\"$file_name\"");
+				$objWriter = PHPExcel_IOFactory::createWriter($this->EE->phpexcel_lib->objPHPExcel, 'Excel2007');
+				$objWriter->save('php://output');
+				exit;				
+			}
+			else
+			{
+				$objWriter = PHPExcel_IOFactory::createWriter($this->EE->phpexcel_lib->objPHPExcel, 'Excel2007');
+				$objWriter->save($this->save_path.'/'.$file_name);
+				exit;				
+			}			
+			
 		}
 		else
 		{
-			$this->save_export($export_data, $file_name);
+			$export_data = $this->EE->export_xls->create($arr, TRUE);
+			if(!$this->disable_download)
+			{
+				header("Content-type: application/octet-stream");
+				header("Content-Disposition: attachment; filename=\"$file_name\"");
+				echo $export_data;
+			}
+			else
+			{
+				$this->save_export($export_data, $file_name);
+			}
 		}
 	}	
 	
