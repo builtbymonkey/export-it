@@ -53,11 +53,11 @@
 
 		if(count($data) == '0')
 		{
-			$return = array('' => 'All');
+			$return = array('0' => 'All');
 		}
 		else
 		{
-			$return = array('' => 'All');
+			$return = array('0' => 'All');
 			foreach($data AS $item)
 			{
 				switch($type)
