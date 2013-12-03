@@ -91,6 +91,7 @@ class Channel_data
 		$this->EE->load->helper('custom_field');
 		$this->EE->load->library('member_data');
 		$this->EE->load->model('category_model');
+		$this->EE->load->helper('utilities_helper');
 	}
 	
 	/**
