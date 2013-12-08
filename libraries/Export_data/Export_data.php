@@ -416,7 +416,7 @@ class Export_data
 		$phpexcel = PATH_THIRD . 'export_it/libraries/Export_data/PHPExcel/PHPExcel.php';
 		if(file_exists($phpexcel))
 		{
-			$this->EE->load->file($phpexcel);
+			include_once $phpexcel;
 			$this->EE->load->library('Export_data/Phpexcel_lib');
 			$this->EE->phpexcel_lib->create($arr, TRUE);
 			$file_name = str_replace('xls', 'xlsx', $file_name);

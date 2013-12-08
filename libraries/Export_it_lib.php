@@ -48,10 +48,18 @@ class Export_it_lib
 	);
 
 	/**
-	 * A list of valid SQL operators
+	 * A list of valid SQL operators template tags can use in "where:XX" parameters
 	 * @var array
 	 */
-	private $valid_operators = array('>', '=>', '<=', '<', '=', '!=', 'LIKE');	
+	private $valid_operators = array(
+		'>', 
+		'>=', 
+		'<=', 
+		'<', 
+		'=', 
+		'!=', 
+		'LIKE'
+	);	
 	
 	public function __construct()
 	{

@@ -128,6 +128,11 @@ class Freeform_data
 		return $return;
 	}
 	
+	/**
+	 * Creates the MySQL table name 
+	 * @param int $form_id
+	 * @return string
+	 */
 	public function set_entries_table($form_id)
 	{
 		return 'freeform_form_entries_'.$form_id;
