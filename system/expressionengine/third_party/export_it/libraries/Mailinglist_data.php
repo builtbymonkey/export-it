@@ -162,6 +162,16 @@ class Mailinglist_data
 			$row = $data->row();
 			return $row->list_id;
 		}
+	}
+
+
+	public function default_template_data()
+	{
+		$message = "{message_text}\n\n";
+		$message .= 'To remove your email from the "{mailing_list}" mailing list, click here:'."\n";
+		$message .= '{if html_email}<a href="{unsubscribe_url}">{unsubscribe_url}</a>{/if}'."\n";
+		$message .= '{if plain_email}{unsubscribe_url}{/if}';
+		return $message;
 	}	
 	
 	/**

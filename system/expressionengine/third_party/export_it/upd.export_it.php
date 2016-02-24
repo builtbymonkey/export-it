@@ -27,7 +27,7 @@ class Export_it_upd
     
     public $settings_table = ''; 
     
-    public $version = '1.3.1';
+    public $version = '1.4.4';
          
     public function __construct() 
     { 
@@ -65,13 +65,13 @@ class Export_it_upd
 	public function activate_extension()
 	{
 		$data = array(
-				'class'     => $this->ext_class_name,
-				'method'    => 'cp_menu_array',
-				'hook'      => 'cp_menu_array',
-				'settings'  => serialize(array()),
-				'priority'  => 9789,
-				'version'   => $this->version,
-				'enabled'   => 'y'
+			'class'     => $this->ext_class_name,
+			'method'    => 'cp_menu_array',
+			'hook'      => 'cp_menu_array',
+			'settings'  => serialize(array()),
+			'priority'  => 400,
+			'version'   => $this->version,
+			'enabled'   => 'y'
 		);
 		
 		$this->EE->db->insert('extensions', $data);		
@@ -123,13 +123,13 @@ class Export_it_upd
 		if(version_compare($current, '1.2.1', '<'))
 		{
 			$data = array(
-					'class'     => $this->ext_class_name,
-					'method'    => 'cp_menu_array',
-					'hook'      => 'cp_menu_array',
-					'settings'  => serialize(array()),
-					'priority'  => 9789,
-					'version'   => $this->version,
-					'enabled'   => 'y'
+				'class'     => $this->ext_class_name,
+				'method'    => 'cp_menu_array',
+				'hook'      => 'cp_menu_array',
+				'settings'  => serialize(array()),
+				'priority'  => 9789,
+				'version'   => $this->version,
+				'enabled'   => 'y'
 			);
 			
 			$this->EE->db->insert('extensions', $data);			
@@ -141,29 +141,29 @@ class Export_it_upd
 	{
 		$this->EE->load->dbforge();
 		$fields = array(
-						'id'	=> array(
-											'type'			=> 'int',
-											'constraint'	=> 10,
-											'unsigned'		=> TRUE,
-											'null'			=> FALSE,
-											'auto_increment'=> TRUE
-										),
-						'setting_key'	=> array(
-											'type' 			=> 'varchar',
-											'constraint'	=> '30',
-											'null'			=> FALSE,
-											'default'		=> ''
-										),
-						'setting_value'  => array(
-											'type' 			=> 'text',
-											'null'			=> FALSE
-										),
-						'serialized' => array(
-											'type' => 'int',
-											'constraint' => 1,
-											'null' => TRUE,
-											'default' => '0'
-						)										
+			'id'	=> array(
+				'type'			=> 'int',
+				'constraint'	=> 10,
+				'unsigned'		=> TRUE,
+				'null'			=> FALSE,
+				'auto_increment'=> TRUE
+			),
+			'setting_key'	=> array(
+				'type' 			=> 'varchar',
+				'constraint'	=> '30',
+				'null'			=> FALSE,
+				'default'		=> ''
+			),
+			'setting_value'  => array(
+				'type' 			=> 'text',
+				'null'			=> FALSE
+			),
+			'serialized' => array(
+				'type' => 'int',
+				'constraint' => 1,
+				'null' => TRUE,
+				'default' => '0'
+			)										
 		);
 
 		$this->EE->dbforge->add_field($fields);

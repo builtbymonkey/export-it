@@ -59,7 +59,28 @@ class Member_data
 		}
 		
 		$this->EE->db->from('members');
-
+		
+		if(isset($where['date_range']) && $where['date_range'] != 'custom_date')
+		{
+			if(is_numeric($where['date_range']))
+			{
+				$this->EE->db->where('join_date >', (mktime()-($where['date_range']*24*60*60)));
+			}
+			else
+			{
+				$parts = explode('to', $where['date_range']);
+				if(count($parts) == '2')
+				{
+					$start = strtotime($parts['0']);
+					$end = strtotime($parts['1']);
+					$where_date = " join_date BETWEEN '$start' AND '$end'";
+					$this->EE->db->where($where_date, null, FALSE);
+				}
+			}
+		
+			unset($where['date_range']);
+		}
+				
 		if(is_array($where) && count($where) >= '1')
 		{
 			foreach($where AS $key => $value)
@@ -90,6 +111,7 @@ class Member_data
 			$this->EE->db->order_by($order);
 		}
 		
+		$this->EE->db->group_by('members.member_id');
 		$data = $this->EE->db->get();
 		$users = $data->result_array();
 		
@@ -102,6 +124,27 @@ class Member_data
 	
 	public function get_total_members($where = FALSE)
 	{
+		if(isset($where['date_range']) && $where['date_range'] != 'custom_date')
+		{
+			if(is_numeric($where['date_range']))
+			{
+				$this->EE->db->where('join_date >', (mktime()-($where['date_range']*24*60*60)));
+			}
+			else
+			{
+				$parts = explode('to', $where['date_range']);
+				if(count($parts) == '2')
+				{
+					$start = strtotime($parts['0']);
+					$end = strtotime($parts['1']);
+					$where_date = " join_date BETWEEN '$start' AND '$end'";
+					$this->EE->db->where($where_date, null, FALSE);
+				}
+			}
+		
+			unset($where['date_range']);
+		}
+				
 		if(is_array($where) && count($where) >= '1')
 		{
 			foreach($where AS $key => $value)
@@ -235,7 +278,7 @@ class Member_data
 		$group_id = (isset($data['group_id']) ? $data['group_id'] : $this->get_group_id(array('group_title' => $data['access'])));
 		$data = array(
 			'username'		=> $data['username'],
-			'password'		=> do_hash($data['password']),
+			'password'		=> sha1($data['password']),
 			'ip_address'	=> $this->EE->input->ip_address(),
 			'unique_id'		=> $this->EE->functions->random('encrypt'),
 			'join_date'		=> $this->EE->localize->now,

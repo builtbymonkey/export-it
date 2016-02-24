@@ -61,6 +61,9 @@ class Export_it_lib
 		'LIKE'
 	);	
 	
+	/**
+	 * @ignore
+	 */
 	public function __construct()
 	{
 		$this->EE =& get_instance();
@@ -112,6 +115,18 @@ class Export_it_lib
 		{
 			$errors['license_number'] = 'missing_license_number';
 		}
+		else
+		{
+			if(!$this->valid_license($this->settings['license_number']))
+			{
+				$errors['license_number'] = 'invalid_license_number';
+			}
+			elseif($this->settings['license_status'] != '1')
+			{
+				$errors['license_number'] = 'invalid_license_number';
+			}
+		}
+		
 		return $errors;
 	}
 	
@@ -235,6 +250,83 @@ class Export_it_lib
 			   '365' => lang('past_year'),
 			   'custom_date' => lang('any_date')
 		);				
+	}	
+	
+	/**
+	 * Validates a license number is valid
+	 * @param string $license
+	 * @return number
+	 */
+	public function valid_license($license)
+	{
+		return preg_match("/^([a-z0-9]{8})-([a-z0-9]{4})-([a-z0-9]{4})-([a-z0-9]{4})-([a-z0-9]{12})$/", $license);
+	}	
+	
+	/**
+	 * Performs the license check
+	 *
+	 * Yes, if you wanted to disable license checks in Backup Pro 2, you'd mess with this.
+	 * But.. c'mon... I've worked hard and it's just me...
+	 *
+	 * @param string $force
+	 */	
+	public function l($force = false)
+	{
+		$valid = false;
+		if( $this->settings['license_number'] && $this->valid_license($this->settings['license_number']))
+		{
+			$license_check = $this->settings['license_check'];
+			$next_notified = mktime(date('G', $license_check)+24, date('i', $license_check), 0, date('n', $license_check), date('j', $license_check), date('Y', $license_check));
+	
+			if(time() > $next_notified || $force)
+			{
+				//license_check
+				$get = array(
+						'ip' => ($this->EE->input->ip_address()),
+						'key' => ($this->settings['license_number']),
+						'site_url' => ($this->EE->config->config['site_url']),
+						'webmaster_email' => ($this->EE->config->config['webmaster_email']),
+						'add_on' => ('export-it'),
+						'version' => ('1.4.3')
+				);
+	
+				$url = 'https://mithra62.com/license-check/'.base64_encode(json_encode($get));
+				$ch = curl_init($url);
+				curl_setopt($ch, CURLOPT_HEADER, 0);
+				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+				curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1");
+				$response = urldecode(curl_exec($ch));
+	
+				$json = json_decode($response, true);
+				if($json && isset($json['valid']))
+				{
+					$this->EE->export_it_settings->update_setting('license_status', $json['valid']);
+				}
+				else
+				{
+					$this->EE->export_it_settings->update_setting('license_status', '0');
+				}
+	
+				$this->EE->export_it_settings->update_setting('license_check', time());
+			}
+		}
+	}	
+	
+	/**
+	 * Wrapper to update the settings
+	 * @param array $settings
+	 * @return bool
+	 */
+	public function update_settings(array $settings = array())
+	{
+		if(isset($settings['license_number']) && $this->valid_license($settings['license_number']) && $this->settings['license_number'] != $settings['license_number'])
+		{
+			$settings['license_status'] = 1;
+			$settings['license_check'] = 0;
+		}
+	
+		return $this->EE->export_it_settings->update_settings($settings);
 	}	
 	
 	public function create_pagination($method, $total, $per_page)

@@ -33,18 +33,20 @@ class Export_it_settings_model extends CI_Model
 	 * @param array $_defaults
 	 */		
 	public $_defaults = array(
-		'license_number' => '',
 		'enable_api' => '0',
 		'api_key' => '',
 		'members_list_limit' => '20',
-		'mailing_list_limit' => '20',
 		'comments_list_limit' => '20',
+		'mailing_list_limit' => '20',
 		'enable_cp_content_menu' => '1',
 		'enable_cp_tools_menu' => '1',
 		'enable_cp_members_menu' => '1',
 		'comments_list_limit' => '20',
+		'license_number' => '',
+		'license_check' => '0',
+		'license_status' => '',
 		'channel_entries_list_limit' => '20',
-		'disable_accordions' => FALSE,
+		'disable_accordions' => TRUE,
 		'export_it_date_format' => '%M %d, %Y, %h:%i:%s%A'
 	);
 	
@@ -114,10 +116,11 @@ class Export_it_settings_model extends CI_Model
 		}
 		
 		//now check to make sure they're all there and set default values if not
+		$ignore = array('license_check','license_status');
 		foreach ($this->_defaults as $key => $value)
 		{	
 			//setup the override check
-			if(isset($this->config->config['export_it'][$key]))
+			if(isset($this->config->config['export_it'][$key]) && !in_array($key, $ignore))
 			{
 				$settings[$key] = $this->config->config['export_it'][$key];
 			}

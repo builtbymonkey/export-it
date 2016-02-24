@@ -1,9 +1,8 @@
 <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
- /**
+/**
  * mithra62 - Export It
  *
- * @package		mithra62:Export_it
  * @author		Eric Lamb
  * @copyright	Copyright (c) 2012, mithra62, Eric Lamb.
  * @link		http://mithra62.com/projects/view/export-it/
@@ -17,7 +16,8 @@ $config['description'] = 'Allows for the ExpressionEngine data to be exported in
 
 $config['mod_url_name'] = strtolower($config['class_name']);
 $config['ext_class_name'] = $config['class_name'].'_ext';
+$config['docs_url'] = 'https://mithra62.com/docs/detail/export-it-installation';
 
-$config['version'] = '1.4';
+$config['version'] = '1.4.4';
 //$config['nsm_addon_updater']['versions_xml'] = 'http://mithra62.com/export-it.xml';
-$config['docs_url'] = 'http://mithra62.com/docs/export-it';
+$config['docs_url'] = 'https://mithra62.com/docs/export-it';

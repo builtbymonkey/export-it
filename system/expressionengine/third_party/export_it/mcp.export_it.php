@@ -40,11 +40,12 @@ class Export_it_mcp
 		$this->EE->load->library('javascript');
 		$this->EE->load->library('table');
 		$this->EE->load->helper('form');
+		$this->EE->load->helper('utilities');
 		$this->EE->load->model('export_it_settings_model', 'export_it_settings');
 		$this->EE->load->library('export_it_lib');
 		$this->EE->load->library('export_it_js');
 		$this->EE->load->library('member_data');
-		$this->EE->load->library('channel_data');
+		$this->EE->load->library('Export_it_channel_data', null, 'channel_data');
 		$this->EE->load->library('mailinglist_data');
 		$this->EE->load->library('comment_data');
 		$this->EE->load->library('encrypt');
@@ -60,6 +61,9 @@ class Export_it_mcp
 		$this->EE->cp->set_breadcrumb(BASE.AMP.'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module='.$this->mod_name, $this->EE->lang->line('export_it_module_name'));
 		$this->EE->cp->set_right_nav($this->EE->export_it_lib->get_right_menu());	
 		
+		//now the theme goodies
+		$this->EE->cp->add_to_foot('<link type="text/css" rel="stylesheet" href="'.m62_theme_url().'export_it/css/export_it.css" />');
+		$this->EE->cp->add_to_foot('<script type="text/javascript" src="'.m62_theme_url().'export_it/js/export_it.js"></script>');
 		
 		$this->errors = $this->EE->export_it_lib->error_check();
 		$this->EE->load->vars(array(
@@ -275,12 +279,19 @@ class Export_it_mcp
 	{
 		die($this->EE->json_ordering->mailing_list_ordering($this->perpage, $this->url_base));
 	}	
+	
+	public function l()
+	{
+		session_write_close();
+		ee()->export_it_lib->l();
+		exit;
+	}
 
 	public function settings()
 	{
 		if(isset($_POST['go_settings']))
 		{		
-			if($this->EE->export_it_settings->update_settings($_POST))
+			if($this->EE->export_it_lib->update_settings($_POST))
 			{	
 				$this->EE->logger->log_action($this->EE->lang->line('log_settings_updated'));
 				$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('settings_updated'));
@@ -296,18 +307,19 @@ class Export_it_mcp
 		}
 	
 		$this->EE->view->cp_page_title = $this->EE->lang->line('settings');
-		
 		$this->EE->cp->add_js_script('ui', 'accordion'); 
-		$this->EE->javascript->output($this->EE->export_it_js->get_accordian_css()); 		
+		if( $this->settings['disable_accordions'] === FALSE)
+		{
+			$this->EE->javascript->output($this->EE->export_it_js->get_accordian_css());
+		}
+		else
+		{
+			$this->EE->cp->add_to_foot('<link type="text/css" rel="stylesheet" href="'.m62_theme_url().'export_it/css/accordion.css" />');
+		}
+				
 		$this->EE->javascript->compile();
 		
 		$vars = array();
-		$vars['settings_disable'] = FALSE;
-		if(isset($this->EE->config->config['export_it']))
-		{
-			$vars['settings_disable'] = 'disabled="disabled"';
-		}		
-
 		$this->settings['api_key'] = $this->EE->encrypt->decode($this->settings['api_key']);
 		$vars['api_url'] = $this->EE->config->config['site_url'].'?ACT='.$this->EE->cp->fetch_action_id('Export_it', 'api').'&key='.$this->settings['api_key'];
 		$vars['settings'] = $this->settings;

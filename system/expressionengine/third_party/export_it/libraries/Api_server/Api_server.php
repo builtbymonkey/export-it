@@ -39,7 +39,7 @@ class Api_server
 		$this->EE->lang->loadfile('export_it');
 		$this->EE->load->library('javascript');
 		$this->EE->load->library('member_data');
-		$this->EE->load->library('channel_data');
+		$this->EE->load->library('Export_it_channel_data', null, 'channel_data');
 		$this->EE->load->library('Export_data/export_data');
 		$this->EE->load->library('mailinglist_data');
 		$this->EE->load->library('comment_data');

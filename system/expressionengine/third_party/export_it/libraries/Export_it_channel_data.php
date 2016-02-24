@@ -20,7 +20,7 @@
  * @author		Eric Lamb
  * @filesource 	./system/expressionengine/third_party/export_it/libraries/Channel_data.php
  */
-class Channel_data
+class Export_it_channel_data
 {
 	/**
 	 * Channel Title Keys
@@ -228,6 +228,7 @@ class Channel_data
 			$this->EE->db->order_by($order);
 		}
 
+		ini_set('memory_limit', '500M');
 		$data = $this->EE->db->get()->result_array();
 		
 		//should we grab categorie data too?
@@ -595,6 +596,14 @@ class Channel_data
 			case 'cartthrob_order_items':
 				$data[$entry_key] = $this->clean_cartthrob_order_items($entry['entry_id'], $entry['field_id_'.$field['field_id']]);
 			break;
+			
+			case 'grid':
+				$data[$entry_key] = $this->clean_grid_data($entry['entry_id'], $field['field_id']);
+			break;
+
+			case 'relationship':
+				$data[$entry_key] = $this->clean_relationship_data($entry['entry_id'], $field['field_id']);
+			break;
 		}
 
 		return $data[$entry_key];
@@ -606,9 +615,40 @@ class Channel_data
 		{
 			return $str;
 		}
+		
+		$cartthrob_version = $this->get_cartthrob_version(PATH_THIRD.'cartthrob/');
 		$this->EE->load->add_package_path(PATH_THIRD.'cartthrob/');
-		$this->EE->load->library('number');
-		return $this->EE->number->format($str);
+
+		if(version_compare(substr(0, 3, $cartthrob_version), '2.1.0', '>'))
+		{
+			$this->EE->load->library('number');
+			return $this->EE->number->format($str);
+		}
+		else
+		{
+			$this->EE->load->library('cartthrob_loader');	
+			$this->EE->load->library('number');
+			return $this->EE->number->format($str);
+		}
+	}
+
+	public function get_cartthrob_version($path)
+	{
+		if(defined('CARTTHROB_VERSION'))
+		{
+			return CARTTHROB_VERSION;
+		}
+
+		//old version
+		$config_path = rtrim($path, '/').'/config.php';
+		if(file_exists($config_path))
+		{
+			include $config_path;
+			if(isset($config['version']))
+			{
+				return $config['version'];
+			}
+		}
 	}
 	
 	public function clean_cartthrob_price_modifiers_data($str)
@@ -886,6 +926,93 @@ class Channel_data
 			$count++;
 		}
 		return $return;		
+	}
+	
+	public function clean_grid_data($entry_id, $field_id)
+	{
+		$table = 'channel_grid_field_'.$field_id;
+		if ($this->EE->db->table_exists($table)) 
+		{
+			//grab the meta info for the grid field
+			$this->EE->db->select("gc.*");
+			$this->EE->db->from('grid_columns gc');
+			$this->EE->db->where('field_id', $field_id);
+			$grid_meta = $this->EE->db->get();
+			if($grid_meta->num_rows == '0')
+			{
+				return FALSE;
+			}
+			
+			//now get cols
+			$this->EE->db->select("*");
+			$this->EE->db->from($table);
+			$this->EE->db->where('entry_id', $entry_id);
+			$grid_data = $this->EE->db->get();
+			if($grid_data->num_rows == '0')
+			{
+				return FALSE;
+			}
+			
+			$data = $grid_data->result_array();
+			$cols = $grid_meta->result_array();
+			
+			$return = array();
+			$count = 0;
+			foreach($data AS $row)
+			{
+			
+				foreach($cols AS $key => $col)
+				{
+					$obj = 'col_id_'.$col['col_id'];
+					$item = $row[$obj];
+					if(isset($item) && $item != '')
+					{
+						$return[$count]['grid'][$count][$col['col_name']] = $item;
+						switch($col['col_type'])
+						{
+							case 'image':
+							case 'file':
+								$return[$count]['grid'][$count][$col['col_name']] = $this->clean_image_data($item);
+							case 'assets':
+								$return[$count]['matrix'][$count][$col['col_name']] = $this->clean_assets_data($item);
+								break;
+							case 'playa':
+								$return[$count]['grid'][$count][$col['col_name']] = $this->clean_playa_data($item);
+								break;
+							case 'vmg_chosen_member':
+								$return[$count]['grid'][$count][$col['col_name']] = $this->clean_vmg_chosen_member_data($item);
+								break;
+							case 'tagger':
+								$return[$count]['grid'][$count][$col['col_name']] = $this->clean_tagger_data($item);
+								break;
+							case 'securitee':
+								$return[$count]['grid'][$count][$col['col_name']] = $this->clean_securitee_data($item);
+								break;
+						}
+					}
+				}
+				$count++;
+			}
+			
+			return $return;
+		}
+	}	
+
+	public function clean_relationship_data($entry_id, $field_id)
+	{
+		$this->EE->db->select('ct.*')->from('relationships')->where(array('field_id' => $field_id, 'parent_id' => $entry_id))
+					 ->join('channel_titles ct', 'ct.entry_id = child_id');
+
+		$data = $this->EE->db->get()->result_array();
+		if($data)
+		{
+			$return = array();
+			foreach($data AS $entry)
+			{
+				$return[] = array('entry_id' => $entry['entry_id'], 'title' => $entry['title'], 'url_title' => $entry['url_title']);
+			}
+			return $return;
+		}
 	}
 
 	public function get_comments(array $where)

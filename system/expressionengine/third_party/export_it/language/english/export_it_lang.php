@@ -10,8 +10,6 @@ $lang = array(
 
 // Additional Key => Value pairs go here
 'main' => 'Main',
-'license_number' => 'License Number',
-'missing_license_number' => 'Please enter your license number. <a href="#config_url#">Enter License</a> or Buy A License on <a href="http://devot-ee.com/add-ons/export-it/">Devot:ee</a> or <a href="http://cartthrob.com/cart/products#third_party_export_it">CartThrob.com</a>',
 'channel_entries' => 'Channel Entries',
 'comments' => 'Comments',
 'mailing_list' => 'Mailing List',
@@ -73,7 +71,9 @@ $lang = array(
 'export_it_date_format' => 'Date Format',
 'export_it_date_format_instructions' => 'The date format you want Export It to use when exporting data. Note that the format should conform to the <a href="http://expressionengine.com/user_guide/templates/date_variable_formatting.html#date-formatting-codes" target="_blank">ExpressionEngine date format</a>.',
 'members_list_limit' => 'Members List Limit',
-		
+'license_number' => 'License Number',
+'missing_license_number' => 'Please enter your license number. <a href="#config_url#">Enter License</a> or Buy A License on <a href="https://mithra62.com/projects/view/export-it">mithra62</a>',
+'invalid_license_number' => 'Your license number is invalid. Please <a href="#config_url#">enter your valid license</a> or <a href="https://mithra62.com/projects/view/export-it">buy a license</a>.',	
 'global_config' => 'Global Configuration',
 'nav_export_members' => 'Export',
 'nav_export_entries' => 'Export',

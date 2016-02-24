@@ -27,7 +27,7 @@ class Export_it_ext
 	
 	public $name = 'Export It';
 	
-	public $version = '1.3.1';
+	public $version = '1.4.4';
 	
 	public $description	= 'Extension for modifying how exporting works';
 	
@@ -99,13 +99,29 @@ class Export_it_ext
 				$this->EE->lang->language['nav_'.$value['channel_title']] = $value['channel_title'];			
 				$export_menu[$value['channel_title']] = $this->url_base.'channel_entries'.AMP.'channel_id='.$value['channel_id'];
 			}
-			
-			$new_menu['publish'] = $menu['content']['publish']; unset($menu['content']['publish']);
-			$new_menu['edit'] = $menu['content']['edit']; unset($menu['content']['edit']);
-			$new_menu['files'] = $menu['content']['files']; unset($menu['content']['files']);
-			$new_menu['export_entries'] = $export_menu;
-			$new_menu['0'] = $menu['content']['0']; unset($menu['content']['0']);
-			$new_menu['overview'] = $menu['content']['overview']; unset($menu['content']['overview']);
+		
+			//special care for Single Entry add-on 'cause they pawned this shit on me
+			if(isset($menu['content']['Single Entries']))
+			{
+				$new_menu['Single Entries'] = $menu['content']['Single Entries'];	
+				$new_menu['0'] = $menu['content']['0'];
+				$new_menu['publish'] = $menu['content']['publish']; unset($menu['content']['publish']);
+				$new_menu['edit'] = $menu['content']['edit']; unset($menu['content']['edit']);
+				$new_menu['files'] = $menu['content']['files']; unset($menu['content']['files']);
+				$new_menu['export_entries'] = $export_menu;
+				$new_menu['1'] = $menu['content']['0'];
+				$new_menu['overview'] = $menu['content']['overview']; unset($menu['content']['overview']);
+			}
+			else
+			{
+				$new_menu['publish'] = $menu['content']['publish']; unset($menu['content']['publish']);
+				$new_menu['edit'] = $menu['content']['edit']; unset($menu['content']['edit']);
+				$new_menu['files'] = $menu['content']['files']; unset($menu['content']['files']);
+				$new_menu['export_entries'] = $export_menu;
+				$new_menu['0'] = $menu['content']['0']; unset($menu['content']['0']);
+				$new_menu['overview'] = $menu['content']['overview']; unset($menu['content']['overview']);
+			}
+
 			$menu['content'] = $new_menu;
 		}
 		

@@ -70,7 +70,7 @@ class Export_it
 		
 		$this->settings = $this->EE->export_it_lib->get_settings();
 		$this->EE->load->library('member_data');
-		$this->EE->load->library('channel_data');
+		$this->EE->load->library('Export_it_channel_data', null, 'channel_data');
 		$this->EE->load->library('mailinglist_data');
 		$this->EE->load->library('comment_data');
 		$this->EE->load->library('encrypt');
