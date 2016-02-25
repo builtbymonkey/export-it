@@ -113,17 +113,17 @@ class Export_it_lib
 		$errors = array();
 		if($this->settings['license_number'] == '')
 		{
-			$errors['license_number'] = 'missing_license_number';
+			//$errors['license_number'] = 'missing_license_number';
 		}
 		else
 		{
 			if(!$this->valid_license($this->settings['license_number']))
 			{
-				$errors['license_number'] = 'invalid_license_number';
+				//$errors['license_number'] = 'invalid_license_number';
 			}
 			elseif($this->settings['license_status'] != '1')
 			{
-				$errors['license_number'] = 'invalid_license_number';
+				//$errors['license_number'] = 'invalid_license_number';
 			}
 		}
 		
